@@ -70,7 +70,7 @@ app.use(
 // global object instantiation
 const supervisor = new Supervisor();
 const validator = new jsonschema.Validator();
-const db = new DB();
+const db = new DB(true);
 const sshCredentialGuard = new SSHCredentialGuard();
 const resultFolderContent = new ResultFolderContentManager();
 const jupyterHub = new JupyterHub();
