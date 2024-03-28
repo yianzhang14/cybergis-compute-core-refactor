@@ -208,7 +208,9 @@ async function initHelloWorldGit() {
   }
 }
 
-initHelloWorldGit();  // eslint-disable-line
+// call initialization stuff
+void initHelloWorldGit();
+void db.connect();
 
 const authMiddleWare = async (
   req: Request, 
