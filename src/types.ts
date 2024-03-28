@@ -341,6 +341,8 @@ export interface EmptyFolder {
   type: "empty"
 }
 
+export type NeedUploadFolder = GlobusFolder | GitFolder | LocalFolder;
+
 export interface authReqBody {
   jupyterhubApiToken: string
 }

@@ -301,7 +301,7 @@ Improvements:
     - rework some of the typings
 - potentially remove some unused classes
 - is there any point in having connectors be passed to it instead of just making a baseconnector
-- think if globus transfers of data should be cached
+- ~~think if globus transfers of data should be cached~~ (no)
 - remove the FolderUploaderHelper -- too generic for its own good
 - make the Folders database be better integrated for cached uploads (just uploads under a cache user right now)
 

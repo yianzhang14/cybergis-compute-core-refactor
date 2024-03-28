@@ -56,16 +56,16 @@ export class Job {
     default: null,
     transformer: {
       to: (
-        i: LocalFolder | GitFolder | GlobusFolder | null | undefined
+        i: NeedUploadFolder | null | undefined
       ): string | null => (i ? JSON.stringify(i) : null),
       from: (
         i: string | null | undefined | object
       ): LocalFolder | GitFolder | GlobusFolder
        | undefined | string | null | object =>
-        typeof i === "string" ? JSON.parse(i) as LocalFolder | GitFolder | GlobusFolder : i,
+        typeof i === "string" ? JSON.parse(i) as NeedUploadFolder : i,
     },
   })
-    localExecutableFolder: LocalFolder | GitFolder | GlobusFolder;
+    localExecutableFolder: NeedUploadFolder;
 
   @Column({
     type: "text",

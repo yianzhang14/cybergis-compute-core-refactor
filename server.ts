@@ -32,14 +32,14 @@ import type {
   hpcConfig,
   maintainerConfig,
   containerConfig,
-  // folderEditable,
   jupyterGlobusMapConfig,
   announcementsConfig,
   authReqBody,
   updateFolderBody,
   initGlobusDownloadBody,
   createJobBody,
-  updateJobBody
+  updateJobBody,
+  GlobusFolder
 } from "./src/types";
 
 // create the express app
@@ -998,8 +998,8 @@ app.post(
     const fromPath = body.fromPath
       ? path.join(folder.globusPath, body.fromPath)
       : folder.globusPath;
-    const from = { path: fromPath, endpoint: hpcConfig.globus.endpoint };
-    const to = { path: body.toPath, endpoint: body.toEndpoint };
+    const from: GlobusFolder = { type: "globus", path: fromPath, endpoint: hpcConfig.globus.endpoint };
+    const to: GlobusFolder = { path: body.toPath, endpoint: body.toEndpoint, type: "globus" };
     // console.log(from, to);
 
     try {
