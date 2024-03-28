@@ -29,6 +29,8 @@
   },
   "homepage": "https://github.com/cybergis/job-supervisor#readme",
   "dependencies": {
+    "@globus/sdk": "^2.4.1",
+    "@globus/types": "^0.0.6",
     "axios": "^0.21.4",
     "better-sqlite3": "^7.5.1",
     "body-parser": "^1.20.1",
