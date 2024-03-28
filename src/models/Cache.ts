@@ -34,7 +34,6 @@ export class Cache {
   
     @Column({
       type: "bigint",
-      nullable: true,
       transformer: {
         to: (
           i: Date | null | undefined

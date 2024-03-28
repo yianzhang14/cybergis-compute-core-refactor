@@ -79,13 +79,9 @@ class DB {
    * Use existing Connection or create new one if no Connection exists
    * @returns {Promise<Connection>} TypeORM connection object
    */
-  async connect(sync = false): Promise<Connection> {
+  async connect(): Promise<Connection> {
     try {
-      const connection = getConnection(this.config.name);
-      if (sync) {
-        await connection.synchronize();
-      }
-      return connection;
+      return getConnection(this.config.name);
     } catch (error) {
       return await createConnection(this.config);
     }
