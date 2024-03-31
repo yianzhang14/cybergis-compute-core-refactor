@@ -14,16 +14,16 @@ import {
 /** Class representing a git action. */
 export class Git {
   @PrimaryColumn()
-    id: string;
+    id!: string;
 
   @Column()
-    address: string;
+    address!: string;
 
   @Column({ nullable: true, default: null })
-    sha: string;
+    sha!: string;
 
   @Column({ default: false })
-    isApproved: boolean;
+    isApproved!: boolean;
 
   @Column({
     type: "bigint",
@@ -36,7 +36,7 @@ export class Git {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    createdAt: Date;
+    createdAt!: Date;
 
   @Column({
     type: "bigint",
@@ -50,7 +50,7 @@ export class Git {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt: Date;
+    updatedAt!: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -64,7 +64,7 @@ export class Git {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt: Date;
+    deletedAt!: Date;
 
   /**
    * Set the createdAt time to the current time.

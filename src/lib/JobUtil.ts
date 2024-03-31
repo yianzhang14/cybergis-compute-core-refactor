@@ -1,10 +1,4 @@
-import redis = require("redis");
-import { promisify } from "util";
-import {
-  hpcConfigMap,
-  // jupyterGlobusMap,
-  // maintainerConfigMap,
-  config } from "../../configs/config";
+import { hpcConfigMap } from "../../configs/config";
 // import path = require("path");
 import DB from "../DB";
 import { Job } from "../models/Job";
@@ -13,102 +7,8 @@ import {
   slurm_integer_time_unit_config,
   slurmInputRules,
   slurm_integer_configs,
-  GetValueFunction,
-  SetValueFunction,
-  DelValueFunction
+  slurm
 } from "../types";
-
-/**
- * Helper class to interface with the jobs redis result folder.
- */
-export class ResultFolderContentManager {
-  private redis = {
-    getValue: null as null | GetValueFunction,
-    setValue: null as null | SetValueFunction,
-    delValue: null as null | DelValueFunction,
-  };
-
-  private isConnected = false;
-
-  /**
-   * Set the value of the job result folder to the contents passed
-   *
-   * @async
-   * @param {string} jobId - This job
-   * @param {string[]} contents - Contents to be listed in the result folder
-   */
-  async put(jobId: string, contents: string[]) {
-    await this.connect();
-    await this.redis.setValue!(
-      `job_result_folder_content${jobId}`,
-      JSON.stringify(contents)
-    );
-  }
-
-  /**
-   * Return the parsed contents of the results folder
-   *
-   * @async
-   * @param {string} jobId - This job
-   * @returns {string[] | null} - Contents of the results folder
-   */
-  async get(jobId: string): Promise<string[] | null> {
-    await this.connect();
-    const out = await this.redis.getValue!(`job_result_folder_content${jobId}`);
-    return out ? JSON.parse(out) as string[] : null;
-  }
-
-  /**
-   * Delete the result folder content associated with this job
-   *
-   * @async
-   * @param {string} jobId - This job
-   */
-  async remove(jobId: string) {
-    await this.connect();
-    const out = await this.get(jobId);
-    if (!out) return;
-    await this.redis.delValue!(`job_result_folder_content${jobId}`);
-  }
-
-  /**
-   * Connect with host
-   *
-   * @async
-   */
-  private async connect() {
-    if (this.isConnected) return;
-
-    // TODO: rework this redis code to be less hacky
-    /* eslint-disable 
-      @typescript-eslint/no-unsafe-assignment, 
-      @typescript-eslint/no-unsafe-argument, 
-      @typescript-eslint/no-unsafe-member-access, 
-      @typescript-eslint/no-unsafe-call 
-    */
-    const client = new redis.createClient({
-      host: config.redis.host,
-      port: config.redis.port,
-    });
-
-    if (config.redis.password !== null && config.redis.password !== undefined) {
-      const redisAuth = promisify(client.auth).bind(client);
-      await redisAuth(config.redis.password);
-    }
-
-    this.redis.getValue = promisify(client.get).bind(client);
-    this.redis.setValue = promisify(client.set).bind(client);
-    this.redis.delValue = promisify(client.del).bind(client);
-    this.isConnected = true;
-
-    /* eslint-disable 
-      @typescript-eslint/no-unsafe-assignment, 
-      @typescript-eslint/no-unsafe-argument, 
-      @typescript-eslint/no-unsafe-member-access, 
-      @typescript-eslint/no-unsafe-call 
-    */
-  }
-}
 
 /**
  * Class providing various useful (static) functions for handling jobs. 
@@ -145,7 +45,7 @@ export default class JobUtil {
   ): Promise<Record<string, number | string>> {
     const db = new DB();
     const connection = await db.connect();
-    const jobs = await connection.getRepository(Job).find({ userId: userId });
+    const jobs = await connection.getRepository(Job).findBy({ userId: userId });
 
     const userSlurmUsage = {
       nodes: 0,
@@ -221,7 +121,7 @@ export default class JobUtil {
    * @throws - Slurm input rules associated with this job must not exceed the default slurm ceiling
    */
   static validateSlurmConfig(job: Job, slurmInputRules: slurmInputRules) {
-    const slurmCeiling = {};
+    const slurmCeiling: Record<string, unknown> = {};
     let globalInputCap = hpcConfigMap[job.hpc].slurm_global_cap;
     if (!globalInputCap) globalInputCap = {};
     slurmInputRules = Object.assign(
@@ -243,52 +143,59 @@ export default class JobUtil {
       time: "10:00:00",
     };
 
+    // TODO: fix this entire thing -- type assertions are iffy
+
     for (const rule_name in slurmInputRules) {
-      if (!slurmInputRules[rule_name].max) continue;
+      const rule = slurmInputRules[rule_name as keyof slurmInputRules];
+      if (!rule || !("max" in rule)) continue;
 
       if (slurm_integer_storage_unit_config.includes(rule_name)) {
-        slurmCeiling[rule_name] = slurmInputRules[rule_name].max + 
-          slurmInputRules[rule_name].unit;
-
+        slurmCeiling[rule_name] = rule.max + rule.unit;
       } else if (slurm_integer_time_unit_config.includes(rule_name)) {
-        const val = slurmInputRules[rule_name].max;
-        const unit = slurmInputRules[rule_name].unit;
-        const sec = JobUtil.unitTimeToSeconds(val, unit);
+        const val = rule.max;
+        const unit = rule.unit;
+        const sec = JobUtil.unitTimeToSeconds(val!, unit);
 
         slurmCeiling[rule_name] = JobUtil.secondsToTime(sec);
       } else if (slurm_integer_configs.includes(rule_name)) {
-        slurmCeiling[rule_name] = slurmInputRules[rule_name].max;
+        slurmCeiling[rule_name] = rule.max;
       }
     }
 
     for (const field in globalInputCap) {
-      if (!slurmCeiling[field]) slurmCeiling[field] = globalInputCap[field];
-      else if (this.compareSlurmConfig(
-        field, 
-        globalInputCap[field], 
-        slurmCeiling[field])
+      const val = globalInputCap[field as keyof slurm];
+      
+      if (!val) slurmCeiling[field] = val;
+      else if (val && typeof val === "string" && 
+        this.compareSlurmConfig(
+          field, 
+          val, 
+          slurmCeiling[field] as string
+        )
       ) {
-        slurmCeiling[field] = globalInputCap[field];
+        slurmCeiling[field] = val;
       }
     }
 
     for (const field in defaultSlurmCeiling) {
       if (!slurmCeiling[field]) {
-        slurmCeiling[field] = defaultSlurmCeiling[field];
+        slurmCeiling[field] = defaultSlurmCeiling[field as keyof typeof defaultSlurmCeiling];
         continue;
       }
     }
 
     for (const field in slurmCeiling) {
-      if (!job.slurm?.[field]) continue;
+      const val = job.slurm?.[field as keyof slurm];
+
+      if (!val) continue;
       
-      if (this.compareSlurmConfig(
+      if (typeof val === "string" && this.compareSlurmConfig(
         field, 
-        slurmCeiling[field], 
-        job.slurm[field])
+        slurmCeiling[field as keyof slurm] as string, 
+        val)
       ) {
         throw new Error(
-          `slurm config ${field} exceeds the threshold of ${slurmCeiling[field]} (current value ${job.slurm[field]})`  // eslint-disable-line @stylistic/max-len
+          `slurm config ${field} exceeds the threshold of ${slurmCeiling[field as keyof slurm] as string} (current value ${val})`  // eslint-disable-line @stylistic/max-len
         );
       }
     }
@@ -378,7 +285,7 @@ export default class JobUtil {
       seconds_in - days * 60 * 60 * 24 - hours * 60 * 60
     );
 
-    const format = (j) => {
+    const format = (j: number) => {
       if (j === 0) return "00";
       else if (j < 10) return `0${j}`;
       else return `${j}`;

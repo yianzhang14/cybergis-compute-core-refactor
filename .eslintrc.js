@@ -88,7 +88,7 @@ module.exports = {
       "error", 
       { 
         ignoreTemplateLiterals: true, 
-        code: 80, 
+        code: 100, 
         ignoreComments: true, 
         ignoreStrings: true 
       }

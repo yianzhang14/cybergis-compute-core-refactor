@@ -56,7 +56,7 @@ export interface integerRule {
   min?: number;
   step?: number;
   default_value: number;
-  unit?: unit;
+  unit: unit;
 }
 
 export interface stringOptionRule {
@@ -147,7 +147,7 @@ export interface localKey {
 export interface redis {
   host: string;
   port: number;
-  password?: unknown;
+  password?: string;
 }
 
 export interface mysql {
@@ -379,19 +379,3 @@ export interface updateJobBody {
   remoteDataFolder?: object,
   remoteExecutableFolder?: object,
 }
-
-export type PushFunction = (_args: unknown[]) => Promise<number>;
-export type ShiftFunction = (_key: unknown) => Promise<unknown>;
-export type PeekFunction = (
-  _key: unknown, 
-  _start: number, 
-  _end: number
-) => Promise<unknown>;
-export type LengthFunction = (_key: unknown) => Promise<number>;
-
-export type GetValueFunction = (_key: unknown) => Promise<string>;
-export type SetValueFunction = (
-  _key: unknown, 
-  _value: string
-) => Promise<string>;  // possibly not string
-export type DelValueFunction = (_keys: unknown) => Promise<number>;

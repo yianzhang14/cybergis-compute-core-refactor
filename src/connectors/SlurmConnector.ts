@@ -11,9 +11,9 @@ import BaseConnector from "./BaseConnector";
  */
 class SlurmConnector extends BaseConnector {
   
-  public slurm_id: string;
+  public slurm_id!: string;
   public modules: string[] = [];  // list of modules to load in slurm environment
-  public template: string;
+  public template!: string;
   public isContainer = false;
 
   /**

@@ -63,7 +63,7 @@ export default class Statistic {
     );
 
     if (statisticTotal && statisticByHPC) {
-      const out = {
+      const out: Record<string, number> = {
         total: parseInt(statisticTotal.STATISTIC),
       };
 

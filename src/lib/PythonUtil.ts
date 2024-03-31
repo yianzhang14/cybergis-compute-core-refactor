@@ -23,7 +23,7 @@ export default class PythonUtil {
   ): Promise<Record<string, unknown>> {
     args.unshift(`${__dirname}/python/${file}`);
     const child = spawn("python3", args);
-    const out = {};
+    const out: Record<string, unknown> = {};
 
     child.stdout.on("data", function (result: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
       let stdout = Buffer.from(result, "utf-8").toString();  // eslint-disable-line @typescript-eslint/no-unsafe-argument
@@ -82,7 +82,7 @@ export default class PythonUtil {
     args.unshift(`${__dirname}/python/${file}`);
     const child = spawn("python3", args);
 
-    const out = {
+    const out: Record<string, null | string> = {
       error: null as null | string,
     };
 

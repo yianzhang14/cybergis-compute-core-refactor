@@ -73,7 +73,7 @@ cmd
 
       console.log("git successfully updated:");
       const gitRepo = connection.getRepository(Git);
-      console.log(await gitRepo.findOne(cmd.id));
+      console.log(await gitRepo.findOneBy({ id: cmd.id }));
 
       break;
     }

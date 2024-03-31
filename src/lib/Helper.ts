@@ -52,34 +52,11 @@ export function job2object(
   }
   
   const out: Record<string, unknown> = {};
-  const include = [
-    "id",
-    "userId",
-    "secretToken",
-    "slurmId",
-    "maintainer",
-    "hpc",
-    "remoteExecutableFolder",
-    "remoteDataFolder",
-    "remoteResultFolder",
-    "localExecutableFolder",
-    "localDataFolder",
-    "param",
-    "env",
-    "slurm",
-    "createdAt",
-    "updatedAt",
-    "deletedAt",
-    "initializedAt",
-    "finishedAt",
-    "isFailed",
-    "events",
-    "logs",
-  ];
+  const include = Object.getOwnPropertyNames(job);
 
   for (const i of include) {
     if (exclude.includes(i)) continue;
-    if (i in job) out[i] = job[i];
+    if (i in job) out[i] = job[i as keyof Job];
     else out[i] = null;
   }
   return out;

@@ -3,7 +3,8 @@
         "target": "es5",
         "module": "commonjs",
         "declaration": false,
-        "noImplicitAny": false,
+        "strict": true,
+        "noImplicitAny": true,
         "noLib": false,
         "outDir": "production",
         "skipLibCheck": true,
@@ -12,8 +13,14 @@
         "removeComments": true,
         "resolveJsonModule" : true,
         "strictNullChecks": true,
-        "esModuleInterop": true
-    },
+        "esModuleInterop": true,
+        "lib": [
+            "es5",
+            "es6"
+         ],
+         "moduleResolution": "node",
+         "sourceMap": true
+      },
     "include": [
         "**/*",
         "src/maintainers/*",

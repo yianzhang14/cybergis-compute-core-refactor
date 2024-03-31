@@ -2,10 +2,10 @@ import SingularityConnector from "../connectors/SingularityConnector";
 import { BaseFolderUploader, FolderUploaderHelper } from "../FolderUploader";
 import GitUtil from "../lib/GitUtil";
 import * as Helper from "../lib/Helper";
-import { ResultFolderContentManager } from "../lib/JobUtil";
 import XSEDEUtil from "../lib/XSEDEUtil";
 import { Folder } from "../models/Folder";
 import { Git } from "../models/Git";
+import { ResultFolderContentManager } from "../Redis";
 import { executableManifest, GitFolder } from "../types";
 import BaseMaintainer from "./BaseMaintainer";
 
@@ -14,12 +14,12 @@ import BaseMaintainer from "./BaseMaintainer";
  */
 class CommunityContributionMaintainer extends BaseMaintainer {
 
-  public connector: SingularityConnector;  // connector to communicate with HPC
+  public connector!: SingularityConnector;  // connector to communicate with HPC
 
   public resultFolderContentManager: ResultFolderContentManager =
     new ResultFolderContentManager();
 
-  public executableManifest: executableManifest;  // details about the job
+  public executableManifest!: executableManifest;  // details about the job
 
   onDefine() {
     this.connector = this.getSingularityConnector();
@@ -53,7 +53,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       // get executable manifest
       const git = await connection
         .getRepository(Git)
-        .findOne((localExecutableFolder).gitId);
+        .findOneBy({ id: (localExecutableFolder).gitId });
       if (!git)
         throw new Error("could not find git repo executable in this job");
       this.executableManifest = (
@@ -83,7 +83,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       this.connector.setRemoteExecutableFolderPath(uploader.hpcPath);
       this.job.remoteExecutableFolder = (await connection
         .getRepository(Folder)
-        .findOne(uploader.id))!;
+        .findOneBy({ id: uploader.id }))!;
 
       // upload data folder
       if (this.job.localDataFolder) {
@@ -99,7 +99,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
         this.connector.setRemoteDataFolderPath(uploader.hpcPath);
         this.job.remoteDataFolder = (await connection
           .getRepository(Folder)
-          .findOne(uploader.id))!;
+          .findOneBy({ id: uploader.id }))!;
       } else if (this.job.remoteDataFolder) {
         this.connector.setRemoteDataFolderPath(
           this.job.remoteDataFolder.hpcPath
@@ -118,7 +118,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       this.connector.setRemoteResultFolderPath(uploader.hpcPath);
       this.job.remoteResultFolder = (await connection
         .getRepository(Folder)
-        .findOne(uploader.id))!;
+        .findOneBy({ id: uploader.id }))!;
 
       // update job
       await this.updateJob({

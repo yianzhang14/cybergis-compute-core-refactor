@@ -11,13 +11,13 @@ import { NeedUploadFolder } from "../types";
 @Entity({ name: "caches" })
 export class Cache {
     @PrimaryGeneratedColumn()
-      id: number;
+      id!: number;
 
     @PrimaryColumn()
-      hpc: string;
+      hpc!: string;
   
     @Column("json")
-      folder: NeedUploadFolder;
+      folder!: NeedUploadFolder;
   
     @Column({
       type: "bigint",
@@ -30,7 +30,7 @@ export class Cache {
         ): Date | null => (i ? new Date(Math.trunc(i)) : null),
       },
     })
-      createdAt: Date;
+      createdAt!: Date;
   
     @Column({
       type: "bigint",
@@ -43,7 +43,7 @@ export class Cache {
         ): Date | null => (i ? new Date(Math.trunc(i)) : null),
       },
     })
-      updatedAt: Date;
+      updatedAt!: Date;
   
     /**
      * Set the createdAt time to the current time.

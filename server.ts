@@ -19,12 +19,13 @@ import {
 import DB from "./src/DB";
 import JupyterHub from "./src/JupyterHub";
 import GitUtil from "./src/lib/GitUtil";
-import GlobusUtil, { GlobusTaskListManager } from "./src/lib/GlobusUtil";
+import GlobusUtil from "./src/lib/GlobusUtil";
 import * as Helper from "./src/lib/Helper";
-import JobUtil, { ResultFolderContentManager } from "./src/lib/JobUtil";
+import JobUtil from "./src/lib/JobUtil";
 import { Folder } from "./src/models/Folder";
 import { Git } from "./src/models/Git";
 import { Job } from "./src/models/Job";
+import { ResultFolderContentManager, GlobusTaskListManager } from "./src/Redis";
 import { SSHCredentialGuard } from "./src/SSHCredentialGuard";
 import Statistic from "./src/Statistic";
 import Supervisor from "./src/Supervisor";
@@ -39,7 +40,8 @@ import type {
   initGlobusDownloadBody,
   createJobBody,
   updateJobBody,
-  GlobusFolder
+  GlobusFolder,
+  executableManifest
 } from "./src/types";
 
 // create the express app
@@ -159,10 +161,10 @@ function requestErrors(v: jsonschema.ValidatorResult): string[] {
 
 // function to take data and get it into dictionary format for DB interfacing
 async function prepareDataForDB(
-  data: updateFolderBody, 
+  data: Record<string, unknown>, 
   properties: string[]
-): Promise<Record<string, string>> {
-  const out = {};
+): Promise<Record<string, string | Folder>> {
+  const out: Record<string, string | Folder> = {};
   const connection = await db.connect();
 
   for (const property of properties) {
@@ -171,16 +173,18 @@ async function prepareDataForDB(
         property === "remoteExecutableFolder" ||
         property === "remoteDataFolder"
       ) {
-        const folder: Folder | undefined = await (connection.
+        const folder: Folder | null = await (connection.
           getRepository(Folder).
-          findOne(data[property] as string)
+          findOneBy({
+            id: data[property] as string
+          })
         );
 
         if (!folder) throw new Error("could not find " + property);
 
         out[property] = folder;
       } else {
-        out[property] = data[property] as string;
+        out[property] = data[property as keyof updateFolderBody] as string;
       }
     }
   }
@@ -193,7 +197,9 @@ async function initHelloWorldGit() {
   const connection = await db.connect();
   const helloWorldGit = await connection
     .getRepository(Git)
-    .findOne("hello_world");
+    .findOneBy({
+      id: "hello_world"
+    });
 
   if (helloWorldGit === undefined) {
     const git = {
@@ -296,9 +302,9 @@ app.get("/statistic/job/:jobId", authMiddleWare, async (req, res) => {
     const connection = await db.connect();
     const job = await connection
       .getRepository(Job)
-      .findOne({ id: req.params.jobId, userId: res.locals.username as string });
+      .findOneBy({ id: req.params.jobId, userId: res.locals.username as string });
 
-    if (job === undefined) {
+    if (job === null) {
       throw new Error("job not found.");
     }
 
@@ -465,7 +471,7 @@ app.get("/user/slurm-usage", authMiddleWare, async (req, res) => {
 app.get("/hpc", function (req, res) {
   const parseHPC = (dest: Record<string, hpcConfig>) => {
     // create truncated version of all hpc configs
-    const out = {};
+    const out: Record<string, Partial<hpcConfig>> = {};
     for (const i in dest) {
       const d: Partial<hpcConfig> = JSON.parse(
         JSON.stringify(dest[i])
@@ -494,7 +500,7 @@ app.get("/hpc", function (req, res) {
  */
 app.get("/maintainer", function (req, res) {
   const parseMaintainer = (dest: Record<string, maintainerConfig>) => {
-    const out = {};
+    const out: Record<string, maintainerConfig> = {};
     for (const i in dest) {
       const d: maintainerConfig = JSON.parse(
         JSON.stringify(dest[i])
@@ -519,7 +525,7 @@ app.get("/maintainer", function (req, res) {
  */
 app.get("/container", function (req, res) {
   const parseContainer = (dest: Record<string, containerConfig>) => {
-    const out = {};
+    const out: Record<string, containerConfig> = {};
     for (const i in dest) {
       const d: containerConfig = JSON.parse(
         JSON.stringify(dest[i])
@@ -544,7 +550,7 @@ app.get("/container", function (req, res) {
  */
 app.get("/whitelist", function (req, res) {
   const parseHost = (dest: Record<string, jupyterGlobusMapConfig>) => {
-    const out = {};
+    const out: Record<string, string> = {};
     for (const i in dest) {
       const d = JSON.parse(JSON.stringify(dest[i])) as jupyterGlobusMapConfig; // hard copy
       out[i] = d.comment;
@@ -566,7 +572,7 @@ app.get("/whitelist", function (req, res) {
  */
 app.get("/allowlist", function (req, res) {
   const parseHost = (dest: Record<string, jupyterGlobusMapConfig>) => {
-    const out = {};
+    const out: Record<string, string> = {};
     for (const i in dest) {
       const d: jupyterGlobusMapConfig = JSON.parse(
         JSON.stringify(dest[i])
@@ -593,7 +599,7 @@ app.get("/announcement", function (req, res) {
   // read announcements from the announcements.json file
   fs.readFile("./configs/announcement.json", "utf8", function (err, data) {
     const parseHost = (dest: Record<string, announcementsConfig>) => {
-      const out = {};
+      const out: Record<string, announcementsConfig> = {};
       for (const i in dest) {
         const d: announcementsConfig = JSON.parse(
           JSON.stringify(dest[i])
@@ -621,7 +627,7 @@ app.get("/announcement", function (req, res) {
  */
 app.get("/git", async function (req, res) {
   const parseGit = async (dest: Git[]) => {
-    const out = {};
+    const out: Record<string, executableManifest> = {};
     for (const d of dest) {
       try {
         // refresh git (updating the database), then get the manifest.json from the repo and append it
@@ -783,7 +789,7 @@ app.get("/folder", authMiddleWare, async function (req, res) {
   const connection = await db.connect();
   const folder = await connection
     .getRepository(Folder)
-    .find({ userId: res.locals.username as string });
+    .findBy({ userId: res.locals.username as string });
   res.json({ folder: folder });
 });
 
@@ -808,7 +814,7 @@ app.get("/folder/:folderId", authMiddleWare, async function (req, res) {
   const connection = await db.connect();
   const folder = await connection
     .getRepository(Folder)
-    .find({ userId: res.locals.username as string, id: req.params.folderId });
+    .findBy({ userId: res.locals.username as string, id: req.params.folderId });
   res.json(folder);
 });
 
@@ -838,7 +844,7 @@ app.delete("/folder/:folderId", authMiddleWare, async function (req, res) {
   const connection = await db.connect();
   const folder = await connection
     .getRepository(Folder)
-    .findOne({ userId: res.locals.username as string, id: folderId });
+    .findOneBy({ userId: res.locals.username as string, id: folderId });
   if (!folder) {
     res.status(404).json({ error: "unknown folder with id " + folderId });
     return;
@@ -893,7 +899,7 @@ app.put("/folder/:folderId", authMiddleWare, async function (req, res) {
   const connection = await db.connect();
   const folder = await connection
     .getRepository(Folder)
-    .findOne({ userId: res.locals.username as string, id: folderId });
+    .findOneBy({ userId: res.locals.username as string, id: folderId });
   if (!folder) {
     res.status(404).json({ error: "unknown folder with id " + folderId });
     return;
@@ -909,12 +915,14 @@ app.put("/folder/:folderId", authMiddleWare, async function (req, res) {
       .createQueryBuilder()
       .update(Folder)
       .where("id = :id", { id: folderId })
-      .set(await prepareDataForDB(body, ["name", "isWritable"]))
+      .set(await prepareDataForDB(body as unknown as Record<string, unknown>, ["name", "isWritable"]))
       .execute();
 
     const updatedFolder = await connection
       .getRepository(Folder)
-      .findOne(folderId);
+      .findOneBy({
+        id: folderId
+      });
 
     res.status(200).json(updatedFolder);
   } catch (err) {
@@ -967,7 +975,9 @@ app.post(
     const connection = await db.connect();
     const folder = await (connection
       .getRepository(Folder)
-      .findOneOrFail(folderId)
+      .findOneByOrFail({
+        id: folderId
+      })
     );
     
     if (!folder) {
@@ -1056,7 +1066,9 @@ app.get(
     const connection = await db.connect();
     const folder = await (connection
       .getRepository(Folder)
-      .findOneOrFail(folderId)
+      .findOneByOrFail({
+        id: folderId
+      })
     );
 
     if (!folder) {
@@ -1223,7 +1235,7 @@ app.put("/job/:jobId", authMiddleWare, async function (req, res) {
     const connection = await db.connect();
     await connection
       .getRepository(Job)
-      .findOneOrFail({ id: jobId, userId: res.locals.username as string });
+      .findOneByOrFail({ id: jobId, userId: res.locals.username as string });
 
     // update the job with the given id
     try {
@@ -1232,7 +1244,7 @@ app.put("/job/:jobId", authMiddleWare, async function (req, res) {
         .update(Job)
         .where("id = :id", { id: jobId })
         .set(
-          await prepareDataForDB(body, [
+          await prepareDataForDB(body as unknown as Record<string, unknown>, [
             "param",
             "env",
             "slurm",
@@ -1254,9 +1266,11 @@ app.put("/job/:jobId", authMiddleWare, async function (req, res) {
     }
 
     // return updated job as a dictionary
-    const job = await connection.getRepository(Job).findOne(jobId);
+    const job = await connection.getRepository(Job).findOneBy({
+      id: jobId
+    });
 
-    if (job === undefined) {
+    if (job === null) {
       throw new Error("Updated job not found in the database.");
     }
 
@@ -1294,16 +1308,14 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
   // try to find the specified job
   try {
     const connection = await db.connect();
-    job = await connection.getRepository(Job).findOneOrFail(
-      { id: jobId, userId: res.locals.username as string },
-      {
-        relations: [
-          "remoteExecutableFolder",
-          "remoteDataFolder",
-          "remoteResultFolder",
-        ],
-      }
-    );
+    job = await connection.getRepository(Job).findOneOrFail({
+      where: { id: jobId, userId: res.locals.username as string },
+      select: [
+        "remoteExecutableFolder",
+        "remoteDataFolder",
+        "remoteResultFolder",
+      ],
+    });
   } catch (e) {
     res.status(401).json({ 
       error: "invalid access", 
@@ -1437,10 +1449,10 @@ app.get("/job/:jobId/events", authMiddleWare, async function (req, res) {
     const connection = await db.connect();
     const job = await connection
       .getRepository(Job)
-      .findOneOrFail(
-        { id: jobId, userId: res.locals.username as string },
-        { relations: ["events"] }
-      );
+      .findOneOrFail({
+        where: { id: jobId, userId: res.locals.username as string },
+        select: ["events"]
+      });
     res.json(job.events);
   } catch (e) {
     res
@@ -1483,7 +1495,7 @@ app.get(
       const connection = await db.connect();
       const job = await connection
         .getRepository(Job)
-        .findOneOrFail({ id: jobId, userId: res.locals.username as string });
+        .findOneByOrFail({ id: jobId, userId: res.locals.username as string });
     
       const out = await resultFolderContent.get(job.id);
       res.json(out ? out : []);
@@ -1526,10 +1538,10 @@ app.get("/job/:jobId/logs", authMiddleWare, async function (req, res) {
 
     const job = await connection
       .getRepository(Job)
-      .findOneOrFail(
-        { id: jobId, userId: res.locals.username as string },
-        { relations: ["logs"] }
-      );
+      .findOneOrFail({
+        where: { id: jobId, userId: res.locals.username as string },
+        select: ["logs"]
+      });
     res.json(job.logs);
   } catch (e) {
     res.status(401).json({ 
@@ -1566,18 +1578,16 @@ app.get("/job/:jobId", authMiddleWare, async function (req, res) {
     const jobId = req.params.jobId;
     const connection = await db.connect();
     
-    const job = await connection.getRepository(Job).findOneOrFail(
-      { id: jobId, userId: res.locals.username as string },
-      {
-        relations: [
-          "remoteExecutableFolder",
-          "remoteDataFolder",
-          "remoteResultFolder",
-          "events",
-          "logs",
-        ],
-      }
-    );
+    const job = await connection.getRepository(Job).findOneOrFail({
+      where: { id: jobId, userId: res.locals.username as string },
+      select: [
+        "remoteExecutableFolder",
+        "remoteDataFolder",
+        "remoteResultFolder",
+        "events",
+        "logs",
+      ],
+    });
     res.json(Helper.job2object(job));
   } catch (e) {
     res.json({ 

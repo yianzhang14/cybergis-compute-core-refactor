@@ -64,9 +64,7 @@ export default class registerUtil {
    */
   static async removeZip(filePath: string) {
     if (await this.isZipped(filePath)) {
-      // TODO: this was previous fs promises unlink -- didn't actually delete the file
-      // was this intended?
-      await fs.promises.rm(filePath + ".zip");
+      await fs.promises.unlink(filePath + ".zip");
     }
   }
 

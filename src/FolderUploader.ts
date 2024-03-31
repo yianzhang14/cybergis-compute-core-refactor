@@ -10,7 +10,6 @@ import GitUtil from "./lib/GitUtil";
 import GlobusUtil from "./lib/GlobusUtil";
 import * as Helper from "./lib/Helper";
 import { Folder } from "./models/Folder";
-import { Git } from "./models/Git";
 import {
   BaseFolder,
   GitFolder,
@@ -91,7 +90,6 @@ export abstract class BaseFolderUploader {
  * Specialization of BaseFolderUploader for uploading an empty folder.
  */
 export class EmptyFolderUploader extends BaseFolderUploader {
-  protected connector: Connector;  // too communicate iwth HPC
 
   constructor(
     hpcName: string,
@@ -275,10 +273,8 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
   private from: GlobusFolder;
   private to: GlobusFolder;
 
-  private taskId: string;
+  private taskId!: string;
   private jobId: string;
-
-  public globusPath: string;  // cannot be null here
 
   constructor(
     from: GlobusFolder,
@@ -300,7 +296,7 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
     this.to = {
       type: "globus",
       endpoint: this.hpcConfig.globus.endpoint,
-      path: this.globusPath,
+      path: this.globusPath!,  // will not be null for globus folder uploads (probably)
     };
 
     this.jobId = jobId;
@@ -435,7 +431,6 @@ export class LocalFolderUploader extends CachedFolderUploader {
  */
 export class GitFolderUploader extends LocalFolderUploader   {
   private gitId: string;
-  private git: Git; 
 
   constructor(
     from: GitFolder,
@@ -450,18 +445,14 @@ export class GitFolderUploader extends LocalFolderUploader   {
   }
 
   public async uploadToPath(path: string) {
-    // try to find the git repo in the database
-    const connection = await this.db.connect();
-    const gitRepo = connection.getRepository(Git);
+    const git = await GitUtil.findGit(this.gitId);
 
-    const foundGit = await gitRepo.findOne(this.gitId);
-    if (!foundGit) {
-      throw new Error(`cannot find git repo with id ${this.gitId}`);
+    if (!git) {
+      throw Error("Could not find git repository to upload.");
     }
-    this.git = foundGit;
 
     // repull git if old, then upload (via SCP)
-    await GitUtil.refreshGit(this.git);
+    await GitUtil.refreshGit(git);
     await super.uploadToPath(path);
   }
 
@@ -472,7 +463,13 @@ export class GitFolderUploader extends LocalFolderUploader   {
    * @protected
    */
   protected async uploadToCache(): Promise<void> {
-    const outOfDate = await GitUtil.outOfDate(this.git);
+    const git = await GitUtil.findGit(this.gitId);
+
+    if (!git) {
+      throw Error("Could not find git repository to upload.");
+    }
+
+    const outOfDate = await GitUtil.outOfDate(git);
     if (!outOfDate) {
       return;
     }

@@ -10,7 +10,7 @@ import SlurmConnector from "../connectors/SlurmConnector";
 import DB from "../DB";
 import * as Helper from "../lib/Helper";
 import { Job } from "../models/Job";
-import Supervisor from "../Supervisor";
+// import Supervisor from "../Supervisor";
 import {
   maintainerConfig,
   event,
@@ -24,7 +24,7 @@ import {
  */
 abstract class BaseMaintainer {
   /** parent pointer **/
-  public supervisor: Supervisor;
+  // public supervisor: Supervisor;
 
   /** packages **/
   public validator = validator; // https://github.com/validatorjs/validator.js
@@ -265,7 +265,7 @@ abstract class BaseMaintainer {
       .execute();
     const jobRepo = connection.getRepository(Job);
 
-    const temp = await jobRepo.findOne(this.id);
+    const temp = await jobRepo.findOneBy({ id: this.id });
     Helper.nullGuard(temp);
     this.job = temp;
   }

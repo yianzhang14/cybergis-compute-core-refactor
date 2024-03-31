@@ -7,7 +7,7 @@ import Emitter from "./Emitter";
 import * as Helper from "./lib/Helper";
 import BaseMaintainer from "./maintainers/BaseMaintainer";
 import { Job } from "./models/Job";
-import Queue from "./Queue";
+import { JobQueue } from "./Redis";
 import { SSH } from "./types";
 
 /**
@@ -20,7 +20,7 @@ class Supervisor {
   // these maps keep track of the various hpcs
   private jobPoolCapacities: Record<string, number> = {};  // capacity
   private jobPoolCounters: Record<string, number> = {};  // current size
-  private queues: Record<string, Queue> = {};  // queues of jobs
+  private queues: Record<string, JobQueue> = {};  // queues of jobs
   private runningJobs: Record<string, Job[]> = {};  // running jobs
   private cancelJobs: Record<string, Job[]> = {};  // what jobs to cancel
 
@@ -44,7 +44,7 @@ class Supervisor {
       // register job pool & queues
       this.jobPoolCapacities[hpcName] = hpcConfig.job_pool_capacity;
       this.jobPoolCounters[hpcName] = 0;
-      this.queues[hpcName] = new Queue(hpcName);
+      this.queues[hpcName] = new JobQueue(hpcName);
       this.runningJobs[hpcName] = new Array<Job>();
       this.cancelJobs[hpcName] = new Array<Job>();
     }
@@ -69,7 +69,7 @@ class Supervisor {
           this.jobPoolCounters[hpcName] < this.jobPoolCapacities[hpcName] &&
           !(await this.queues[hpcName].isEmpty())
         ) {
-          const job = await this.queues[hpcName].shift();
+          const job = await this.queues[hpcName].pop();
           if (!job) continue;
 
           // eslint-disable-next-line

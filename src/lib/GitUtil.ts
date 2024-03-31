@@ -10,6 +10,7 @@ import { Git } from "../models/Git";
 import {
   executableManifest,
   integerRule,
+  slurmInputRules,
   slurm_configs,
   slurm_integer_configs,
   slurm_integer_none_unit_config,
@@ -304,7 +305,7 @@ export default class GitUtil {
       ).toString();
     } catch (e) {
       // delete, repull, and then read
-      console.log(`Encountered error with manifest: ${e}.\nDeleting and repulling`);
+      console.log("Encountered error with manifest", e, ".\nDeleting and repulling");
       await this.deleteAndPull(git);
       rawExecutableManifest = (
         await fs.promises.readFile(executableFolderPath)
@@ -354,35 +355,42 @@ export default class GitUtil {
       
       // remove invalid configs
       if (!slurm_configs.includes(rule_name)) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[
+          rule_name as keyof slurmInputRules
+        ];
         continue;
       }
 
       // pass by reference
-      const rule = (executableManifest
-        .slurm_input_rules[rule_name] 
-      ) as integerRule | stringOptionRule;
+      const rule = executableManifest
+        .slurm_input_rules[rule_name as keyof slurmInputRules];
+
+      if (rule === undefined) {
+        continue;
+      }
 
       if (!rule.default_value) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[
+          rule_name as keyof slurmInputRules
+        ];
         continue;
       }
 
       if (
         slurm_integer_time_unit_config.includes(rule_name) &&
         (rule as integerRule).unit !== undefined &&
-        !["Minutes", "Hours", "Days"].includes((rule as integerRule).unit!)
+        !["Minutes", "Hours", "Days"].includes((rule as integerRule).unit)
       ) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[rule_name as keyof slurmInputRules];
         continue;
       }
 
       if (
         slurm_integer_storage_unit_config.includes(rule_name) &&
         (rule as integerRule).unit !== undefined &&
-        !["GB", "MB"].includes((rule as integerRule).unit!)
+        !["GB", "MB"].includes((rule as integerRule).unit)
       ) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[rule_name as keyof slurmInputRules];
         continue;
       }
 
@@ -496,7 +504,7 @@ export default class GitUtil {
       ).toString();
     } catch (e) {
       // delete, repull, and then read
-      console.log(`Encountered error with manifest: ${e}.\nDeleting and repulling`);
+      console.log("Encountered error with manifest: ", e, ".\nDeleting and repulling");
       await this.deleteAndPullManifest(git);
       rawExecutableManifest = (
         await fs.promises.readFile(executableFolderPath)
@@ -504,5 +512,15 @@ export default class GitUtil {
     }
 
     return this.processExecutableManifest(rawExecutableManifest, git.address);
+  }
+
+  static async findGit(gitId: string): Promise<Git | null> {
+    const db = new DB();
+    const connection = await db.connect();
+    const gitRepo = connection.getRepository(Git);
+
+    const foundGit = await gitRepo.findOneBy({id :gitId});
+
+    return foundGit;
   }
 }

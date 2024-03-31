@@ -12,10 +12,10 @@ import {
 @Entity({ name: "globus_transfer_refresh_token" })
 export class GlobusTransferRefreshToken {
   @PrimaryColumn()
-    identity: string;
+    identity!: string;
 
   @Column()
-    transferRefreshToken: string;
+    transferRefreshToken!: string;
 
   @Column({
     type: "bigint",
@@ -28,7 +28,7 @@ export class GlobusTransferRefreshToken {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    createdAt: Date;
+    createdAt!: Date;
 
   @Column({
     type: "bigint",
@@ -42,7 +42,7 @@ export class GlobusTransferRefreshToken {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt: Date;
+    updatedAt!: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -56,7 +56,7 @@ export class GlobusTransferRefreshToken {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt: Date;
+    deletedAt!: Date;
 
   /**
    * Set the createdAt time to the current time.
