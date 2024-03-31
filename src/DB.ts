@@ -7,11 +7,12 @@ import { Event } from "../src/models/Event";
 import { Job } from "../src/models/Job";
 import { Log } from "../src/models/Log";
 import * as Helper from "./lib/Helper";
+import { Cache } from "./models/Cache";
 import { Folder } from "./models/Folder";
 import { Git } from "./models/Git";
 import { GlobusTransferRefreshToken } from "./models/GlobusTransferRefreshToken";
 
-const entities = [Event, Log, Job, Git, GlobusTransferRefreshToken, Folder];
+const entities = [Event, Log, Job, Git, GlobusTransferRefreshToken, Folder, Cache];
 
 /**
  * Connection helper class as a wrapper around TypeORM Connection (MySQL)
