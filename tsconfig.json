@@ -21,6 +21,11 @@
          "moduleResolution": "node",
          "sourceMap": true
       },
+    "include": [
+        "**/*",
+        "src/maintainers/*",
+        ".eslintrc.js"
+    ],
     "exclude": [
         "node_modules",
         "**/*.spec.ts",
