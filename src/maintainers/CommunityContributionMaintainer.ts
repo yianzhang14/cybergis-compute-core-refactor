@@ -57,7 +57,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       if (!git)
         throw new Error("could not find git repo executable in this job");
       this.executableManifest = (
-        await GitUtil.getExecutableManifestSpecialized(git)
+        await GitUtil.getExecutableManifest(git)
       );
       
       // overwrite default singularity connector if cvmfs needs to be turned on

@@ -632,10 +632,8 @@ app.get("/git", async function (req, res) {
       try {
         // refresh git (updating the database), then get the manifest.json from the repo and append it
         // await GitUtil.refreshGit(d);
-        // out[d.id] = await GitUtil.getExecutableManifest(d);
 
-        await GitUtil.refreshGitManifest(d);
-        out[d.id] = await GitUtil.getExecutableManifestSpecialized(d);
+        out[d.id] = await GitUtil.getExecutableManifest(d);
       } catch (e) {  // pulling/cloning went wrong
         console.error(`cannot clone git: ${Helper.assertError(e).toString()}`);
       }
