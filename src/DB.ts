@@ -51,10 +51,6 @@ if (config.is_jest) {
 
 const dataSource = new DataSource(dbConfig);
 
-dataSource.initialize().then(() => ({})).catch((err) => {
-  console.error("Error initializing the database", err);
-});
-
 export async function clearAll() {
   try {
     for (const entity of entities) {

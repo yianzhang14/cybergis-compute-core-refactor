@@ -44,6 +44,17 @@ import type {
   executableManifest
 } from "./src/types";
 
+// establish database connection
+dataSource
+  .initialize()
+  .then(() => {
+      console.log("Data Source has been initialized!");
+  })
+  .catch((err) => {
+      console.error("Error during Data Source initialization:", err);
+      throw err;
+  })
+
 // create the express app
 const app = express();
 
