@@ -358,6 +358,8 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
     if (status.includes("SUCCEEDED")) {
       this.isComplete = true;
     }    
+
+    await this.register();
   }
 
   /**
@@ -367,8 +369,6 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
   public async upload() {
     // start the transfer
     await this.uploadToFolder(this.to);
-
-    await this.register();
   }
 
   /**
@@ -433,6 +433,8 @@ export class LocalFolderUploader extends CachedFolderUploader {
 
     // register upload in database & mark complete
     this.isComplete = true;
+
+    await this.register();
   }
 
   /**
@@ -442,8 +444,6 @@ export class LocalFolderUploader extends CachedFolderUploader {
    */
   public async upload() {
     await this.uploadToPath(this.hpcPath);
-
-    await this.register();
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

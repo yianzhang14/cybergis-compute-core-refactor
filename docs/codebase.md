@@ -303,7 +303,8 @@ Improvements:
 - is there any point in having connectors be passed to it instead of just making a baseconnector
 - ~~think if globus transfers of data should be cached~~ (no)
 - remove the FolderUploaderHelper -- too generic for its own good
-- make the Folders database be better integrated for cached uploads (just uploads under a cache user right now)
+- ~~make the Folders database be better integrated for cached uploads (just uploads under a cache user right now)~~
+    - cache exists now but still need to integrate with folders to get the remote executable folder and such -- should fully detach at some point
 
 ### JupyterHub
 
