@@ -12,7 +12,7 @@ import { Folder } from "./models/Folder";
 import { Git } from "./models/Git";
 import { GlobusTransferRefreshToken } from "./models/GlobusTransferRefreshToken";
 
-const entities = [Event, Log, Job, Git, GlobusTransferRefreshToken, Folder, Cache];
+const entities = [Event, Log, Job, Git, GlobusTransferRefreshToken, Folder, Cache, "production/src/models/**/*.js"];
 
 let dbConfig: DataSourceOptions = {
   name: "default",
