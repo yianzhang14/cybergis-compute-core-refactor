@@ -16,7 +16,7 @@ import {
   maintainerConfigMap,
   jupyterGlobusMap
 } from "./configs/config";
-import DB from "./src/DB";
+import dataSource from "./src/DB";
 import JupyterHub from "./src/JupyterHub";
 import GitUtil from "./src/lib/GitUtil";
 import GlobusUtil from "./src/lib/GlobusUtil";
@@ -72,7 +72,6 @@ app.use(
 // global object instantiation
 const supervisor = new Supervisor();
 const validator = new jsonschema.Validator();
-const db = new DB();
 const sshCredentialGuard = new SSHCredentialGuard();
 const resultFolderContent = new ResultFolderContentManager();
 const jupyterHub = new JupyterHub();
@@ -165,7 +164,6 @@ async function prepareDataForDB(
   properties: string[]
 ): Promise<Record<string, string | Folder>> {
   const out: Record<string, string | Folder> = {};
-  const connection = await db.connect();
 
   for (const property of properties) {
     if (data[property]) {
@@ -173,7 +171,7 @@ async function prepareDataForDB(
         property === "remoteExecutableFolder" ||
         property === "remoteDataFolder"
       ) {
-        const folder: Folder | null = await (connection.
+        const folder: Folder | null = await (dataSource.
           getRepository(Folder).
           findOneBy({
             id: data[property] as string
@@ -194,8 +192,7 @@ async function prepareDataForDB(
 
 // initializes a hello world repository in the DB
 async function initHelloWorldGit() {
-  const connection = await db.connect();
-  const helloWorldGit = await connection
+  const helloWorldGit = await dataSource
     .getRepository(Git)
     .findOneBy({
       id: "hello_world"
@@ -210,13 +207,12 @@ async function initHelloWorldGit() {
       updatedAt: new Date(),
     };
 
-    await connection.getRepository(Git).save(git);
+    await dataSource.getRepository(Git).save(git);
   }
 }
 
 // call initialization stuff
 void initHelloWorldGit();
-void db.connect();
 
 const authMiddleWare = async (
   req: Request, 
@@ -299,8 +295,7 @@ app.get("/statistic/job/:jobId", authMiddleWare, async (req, res) => {
 
   try {
     // query the job matching the params
-    const connection = await db.connect();
-    const job = await connection
+    const job = await dataSource
       .getRepository(Job)
       .findOneBy({ id: req.params.jobId, userId: res.locals.username as string });
 
@@ -423,8 +418,7 @@ app.get("/user/job", authMiddleWare, async (req, res) => {
   }
 
   // get all jobs associated with user
-  const connection = await db.connect();
-  const jobs = await connection.getRepository(Job).find({
+  const jobs = await dataSource.getRepository(Job).find({
     where: { userId: res.locals.username as string },
     relations: [
       "remoteDataFolder",
@@ -641,8 +635,7 @@ app.get("/git", async function (req, res) {
     return out;
   };
 
-  const connection = await db.connect();
-  const gits = await connection
+  const gits = await dataSource
     .getRepository(Git)
     .find({ order: { id: "DESC" } });
   res.json({ git: await parseGit(gits) });
@@ -784,8 +777,7 @@ app.get("/folder", authMiddleWare, async function (req, res) {
   }
 
   // get all folders associated with the user from the database
-  const connection = await db.connect();
-  const folder = await connection
+  const folder = await dataSource
     .getRepository(Folder)
     .findBy({ userId: res.locals.username as string });
   res.json({ folder: folder });
@@ -809,8 +801,7 @@ app.get("/folder/:folderId", authMiddleWare, async function (req, res) {
   }
 
   // get all folders associated with the user and with the given folder Id from the database
-  const connection = await db.connect();
-  const folder = await connection
+  const folder = await dataSource
     .getRepository(Folder)
     .findBy({ userId: res.locals.username as string, id: req.params.folderId });
   res.json(folder);
@@ -839,8 +830,7 @@ app.delete("/folder/:folderId", authMiddleWare, async function (req, res) {
 
   // try to find the folder with the given id/associated user; if not found, give a 404
   const folderId = req.params.folderId;
-  const connection = await db.connect();
-  const folder = await connection
+  const folder = await dataSource
     .getRepository(Folder)
     .findOneBy({ userId: res.locals.username as string, id: folderId });
   if (!folder) {
@@ -849,7 +839,7 @@ app.delete("/folder/:folderId", authMiddleWare, async function (req, res) {
   }
 
   try {
-    await connection.getRepository(Folder).softDelete(folderId);  // not actually deleted, just marked as such
+    await dataSource.getRepository(Folder).softDelete(folderId);  // not actually deleted, just marked as such
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(401).json(
@@ -894,8 +884,7 @@ app.put("/folder/:folderId", authMiddleWare, async function (req, res) {
 
   // try to find the folder specified in the body, if not found, give a 404
   const folderId = req.params.folderId;
-  const connection = await db.connect();
-  const folder = await connection
+  const folder = await dataSource
     .getRepository(Folder)
     .findOneBy({ userId: res.locals.username as string, id: folderId });
   if (!folder) {
@@ -909,14 +898,14 @@ app.put("/folder/:folderId", authMiddleWare, async function (req, res) {
 
   try {
     // update the folder entry and return it
-    await connection
+    await dataSource
       .createQueryBuilder()
       .update(Folder)
       .where("id = :id", { id: folderId })
       .set(await prepareDataForDB(body as unknown as Record<string, unknown>, ["name", "isWritable"]))
       .execute();
 
-    const updatedFolder = await connection
+    const updatedFolder = await dataSource
       .getRepository(Folder)
       .findOneBy({
         id: folderId
@@ -970,8 +959,7 @@ app.post(
 
     // get folder; if not found, error out
     const folderId = req.params.folderId;
-    const connection = await db.connect();
-    const folder = await (connection
+    const folder = await (dataSource
       .getRepository(Folder)
       .findOneByOrFail({
         id: folderId
@@ -1061,8 +1049,7 @@ app.get(
 
     // get folder -- if doesn't exist, error out
     const folderId = req.params.folderId;
-    const connection = await db.connect();
-    const folder = await (connection
+    const folder = await (dataSource
       .getRepository(Folder)
       .findOneByOrFail({
         id: folderId
@@ -1172,8 +1159,7 @@ app.post("/job", authMiddleWare, async function (req, res) {
   }
 
   // start job db connection & create the job object to upload
-  const connection = await db.connect();
-  const jobRepo = connection.getRepository(Job);
+  const jobRepo = dataSource.getRepository(Job);
 
   const job: Job = new Job();
   job.id = Helper.generateId();
@@ -1230,14 +1216,13 @@ app.put("/job/:jobId", authMiddleWare, async function (req, res) {
   try {
     // test if job exists
     const jobId = req.params.jobId;
-    const connection = await db.connect();
-    await connection
+    await dataSource
       .getRepository(Job)
       .findOneByOrFail({ id: jobId, userId: res.locals.username as string });
 
     // update the job with the given id
     try {
-      await connection
+      await dataSource
         .createQueryBuilder()
         .update(Job)
         .where("id = :id", { id: jobId })
@@ -1264,7 +1249,7 @@ app.put("/job/:jobId", authMiddleWare, async function (req, res) {
     }
 
     // return updated job as a dictionary
-    const job = await connection.getRepository(Job).findOneBy({
+    const job = await dataSource.getRepository(Job).findOneBy({
       id: jobId
     });
 
@@ -1305,8 +1290,7 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
 
   // try to find the specified job
   try {
-    const connection = await db.connect();
-    job = await connection.getRepository(Job).findOneOrFail({
+    job = await dataSource.getRepository(Job).findOneOrFail({
       where: { id: jobId, userId: res.locals.username as string },
       select: [
         "remoteExecutableFolder",
@@ -1336,9 +1320,8 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
     await supervisor.pushJobToQueue(job);
 
     // update status of the job
-    const connection = await db.connect();
     job.queuedAt = new Date();
-    await connection
+    await dataSource
       .createQueryBuilder()
       .update(Job)
       .where("id = :id", { id: job.id })
@@ -1444,8 +1427,7 @@ app.get("/job/:jobId/events", authMiddleWare, async function (req, res) {
   try {
     // get events from the job repo (updated in the supervisor/with individual maintainers)
     const jobId = req.params.jobId;
-    const connection = await db.connect();
-    const job = await connection
+    const job = await dataSource
       .getRepository(Job)
       .findOneOrFail({
         where: { id: jobId, userId: res.locals.username as string },
@@ -1490,8 +1472,7 @@ app.get(
     try {
     // query the result folder content from the job repo
       const jobId = req.params.jobId;
-      const connection = await db.connect();
-      const job = await connection
+      const job = await dataSource
         .getRepository(Job)
         .findOneByOrFail({ id: jobId, userId: res.locals.username as string });
     
@@ -1532,9 +1513,8 @@ app.get("/job/:jobId/logs", authMiddleWare, async function (req, res) {
   try {
     // try to get the logs from teh jobs database (continuously updated in the maintainer)
     const jobId = req.params.jobId;
-    const connection = await db.connect();
 
-    const job = await connection
+    const job = await dataSource
       .getRepository(Job)
       .findOneOrFail({
         where: { id: jobId, userId: res.locals.username as string },
@@ -1574,9 +1554,8 @@ app.get("/job/:jobId", authMiddleWare, async function (req, res) {
   try {
     // query job database for all requested things, return it as a dictionary json
     const jobId = req.params.jobId;
-    const connection = await db.connect();
     
-    const job = await connection.getRepository(Job).findOneOrFail({
+    const job = await dataSource.getRepository(Job).findOneOrFail({
       where: { id: jobId, userId: res.locals.username as string },
       select: [
         "remoteExecutableFolder",
