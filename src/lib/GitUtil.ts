@@ -202,9 +202,7 @@ export default class GitUtil {
     const localPath = this.getLocalPath(git.id);
     const executableFolderPath = path.join(localPath, "manifest.json");
 
-    if (await this.outOfDate(git)) {
-      await this.refreshGit(git);
-    }
+    await this.refreshGit(git);
 
     let rawExecutableManifest: string;
     try {
