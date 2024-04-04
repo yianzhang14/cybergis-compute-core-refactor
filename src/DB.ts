@@ -6,6 +6,7 @@ import { config } from "../configs/config";
 import { Event } from "../src/models/Event";
 import { Job } from "../src/models/Job";
 import { Log } from "../src/models/Log";
+import * as Helper from "./lib/Helper"; 
 import { Cache } from "./models/Cache";
 import { Folder } from "./models/Folder";
 import { Git } from "./models/Git";
@@ -53,5 +54,16 @@ const dataSource = new DataSource(dbConfig);
 dataSource.initialize().then(() => ({})).catch((err) => {
   console.error("Error initializing the database", err);
 });
+
+export async function clearAll() {
+  try {
+    for (const entity of entities) {
+      const repository = dataSource.getRepository(entity);
+      await repository.clear();
+    }
+  } catch (error) {
+    throw new Error(`ERROR: Cleaning test db: ${Helper.assertError(error).toString()}`);
+  }
+}
 
 export default dataSource;

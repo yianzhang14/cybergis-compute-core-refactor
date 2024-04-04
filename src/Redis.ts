@@ -1,6 +1,6 @@
 import { RedisClientType, createClient } from "redis";
 import { config } from "../configs/config";
-import DB from "./DB";
+import dataSource from "./DB";
 import { Job } from "./models/Job";
 import { credential } from "./types";
 
@@ -128,7 +128,6 @@ export class ResultFolderContentManager extends RedisStore {
  */
 export class JobQueue extends RedisStore {
   private name: string;
-  private db = new DB();
   private credentialManager = new CredentialManager();
 
   public constructor(name: string) {
@@ -202,8 +201,7 @@ export class JobQueue extends RedisStore {
    * @return {Promise<Job | null>} job with the given jobId
    */
   private async getJobById(id: string): Promise<Job | null> {
-    const connection = await this.db.connect();
-    const jobRepo = connection.getRepository(Job);
+    const jobRepo = dataSource.getRepository(Job);
     const job = await jobRepo.findOne({
       where: { id: id }, 
       select: [
