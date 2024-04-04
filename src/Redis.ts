@@ -1,4 +1,4 @@
-import redis from "redis";
+import { RedisClientType, createClient } from "redis";
 import { config } from "../configs/config";
 import DB from "./DB";
 import { Job } from "./models/Job";
@@ -6,10 +6,10 @@ import { credential } from "./types";
 
 class RedisStore {
 
-  protected client: redis.RedisClientType;
+  protected client: RedisClientType;
 
   public constructor() {
-    this.client = redis.createClient({
+    this.client = createClient({
       socket: {
         host: config.redis.host,
         port: config.redis.port
