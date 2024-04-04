@@ -16,6 +16,11 @@ class RedisStore {
       },
       password: config.redis.password
     });
+
+    this.client.connect()
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   public async disconnect() {
