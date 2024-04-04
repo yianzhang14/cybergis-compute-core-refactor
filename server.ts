@@ -48,12 +48,12 @@ import type {
 dataSource
   .initialize()
   .then(() => {
-      console.log("Data Source has been initialized!");
+    console.log("Data Source has been initialized!");
   })
   .catch((err) => {
-      console.error("Error during Data Source initialization:", err);
-      throw err;
-  })
+    console.error("Error during Data Source initialization:", err);
+    throw err;
+  });
 
 // create the express app
 const app = express();

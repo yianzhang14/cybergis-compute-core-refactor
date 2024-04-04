@@ -15,7 +15,7 @@ import BaseMaintainer from "./BaseMaintainer";
  */
 class CommunityContributionMaintainer extends BaseMaintainer {
 
-  public connector!: SingularityConnector;  // connector to communicate with HPC
+  declare public connector: SingularityConnector;  // connector to communicate with HPC
 
   public resultFolderContentManager: ResultFolderContentManager =
     new ResultFolderContentManager();

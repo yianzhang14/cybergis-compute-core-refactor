@@ -63,7 +63,7 @@ abstract class BaseMaintainer {
   public appParam: Record<string, string> = {};
 
   /** HPC connectors **/
-  public connector: BaseConnector | undefined = undefined;
+  public connector!: BaseConnector;
 
   /** data **/
   protected logs: string[] = [];
