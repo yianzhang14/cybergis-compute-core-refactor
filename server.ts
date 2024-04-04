@@ -203,6 +203,8 @@ async function prepareDataForDB(
 
 // initializes a hello world repository in the DB
 async function initHelloWorldGit() {
+  await dataSource.initialize();
+  
   const helloWorldGit = await dataSource
     .getRepository(Git)
     .findOneBy({
