@@ -2,7 +2,7 @@ import NodeSSH = require("node-ssh");
 import * as events from "events";
 import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
 import connectionPool from "./connectors/ConnectionPool";
-import DB from "./DB";
+import dataSource from "./DB";
 import Emitter from "./Emitter";
 import * as Helper from "./lib/Helper";
 import BaseMaintainer from "./maintainers/BaseMaintainer";
@@ -14,8 +14,6 @@ import { SSH } from "./types";
  * Manages 
  */
 class Supervisor {
-
-  private db = new DB();  // database reference
 
   // these maps keep track of the various hpcs
   private jobPoolCapacities: Record<string, number> = {};  // capacity
@@ -93,8 +91,8 @@ class Supervisor {
             );
 
             job.finishedAt = new Date();
-            const connection = await this.db.connect();
-            await connection
+
+            await dataSource
               .createQueryBuilder()
               .update(Job)
               .where("id = :id", { id: job.id })

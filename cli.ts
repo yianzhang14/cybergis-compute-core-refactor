@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import DB from "./src/DB";
+import dataSource from "./src/DB";
 import { Git } from "./src/models/Git";
 const pkg: {version: string} = require("../package.json");  // eslint-disable-line
 const cmd = new Command();
@@ -24,8 +24,6 @@ cmd
   )
   .option("-s, --sha <sha>", "[operation=add/update] git repository's sha hash")
   .action(async (operation: string, cmd: CommandOptions) => {
-    const db = new DB(false);
-
     switch (operation) {
     case "add": {
       const git = new Git();
@@ -43,8 +41,7 @@ cmd
       git.isApproved = true;
       if (cmd.sha) git.sha = cmd.sha;
 
-      const connection = await db.connect();
-      const gitRepo = connection.getRepository(Git);
+      const gitRepo = dataSource.getRepository(Git);
       await gitRepo.save(git);
 
       console.log("git successfully added:");
@@ -58,13 +55,12 @@ cmd
         return;
       }
 
-      const connection = await db.connect();
       const i: {address?: string, sha?: string} = {};
 
       if (cmd.address) i.address = cmd.address;
       if (cmd.sha) i.sha = cmd.sha;
 
-      await connection
+      await dataSource
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: cmd.id })
@@ -72,7 +68,7 @@ cmd
         .execute();
 
       console.log("git successfully updated:");
-      const gitRepo = connection.getRepository(Git);
+      const gitRepo = dataSource.getRepository(Git);
       console.log(await gitRepo.findOneBy({ id: cmd.id }));
 
       break;
@@ -82,9 +78,8 @@ cmd
         console.error("-i, --id <id> flag is required");
         return;
       }
-
-      const connection = await db.connect();
-      await connection
+    
+      await dataSource
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: cmd.id })
@@ -101,8 +96,7 @@ cmd
         return;
       }
 
-      const connection = await db.connect();
-      const gitRepo = connection.getRepository(Git);
+      const gitRepo = dataSource.getRepository(Git);
       await gitRepo.delete(cmd.id);
 
       console.log("git successfully deleted");
@@ -118,7 +112,7 @@ cmd
     }
     }
     
-    await db.close();
+    await dataSource.destroy();
   });
 
 cmd.parse(process.argv);

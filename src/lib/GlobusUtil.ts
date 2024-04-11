@@ -1,5 +1,5 @@
 import { config } from "../../configs/config";
-import DB from "../DB";
+import dataSource from "../DB";
 import { GlobusTransferRefreshToken } from 
   "../models/GlobusTransferRefreshToken";
 import { GlobusFolder, hpcConfig } from "../types";
@@ -10,8 +10,6 @@ export default class GlobusUtil {
   /**
    * Class for accessing Globus commands
    */
-
-  static db = new DB();
 
   /**
    * Initializes globus job
@@ -31,8 +29,7 @@ export default class GlobusUtil {
     hpcConfig: hpcConfig,
     label = ""
   ): Promise<string> {
-    const connection = await this.db.connect();
-    const globusTransferRefreshTokenRepo = connection.getRepository(
+    const globusTransferRefreshTokenRepo = dataSource.getRepository(
       GlobusTransferRefreshToken
     );
 
@@ -136,8 +133,7 @@ export default class GlobusUtil {
     hpcConfig: hpcConfig,
     script: string
   ): Promise<string> {
-    const connection = await this.db.connect();
-    const globusTransferRefreshTokenRepo = connection.getRepository(
+    const globusTransferRefreshTokenRepo = dataSource.getRepository(
       GlobusTransferRefreshToken
     );
     const g = await globusTransferRefreshTokenRepo.findOneBy({

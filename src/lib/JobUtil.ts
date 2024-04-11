@@ -1,6 +1,6 @@
 import { hpcConfigMap } from "../../configs/config";
 // import path = require("path");
-import DB from "../DB";
+import dataSource from "../DB";
 import { Job } from "../models/Job";
 import {
   slurm_integer_storage_unit_config,
@@ -43,9 +43,7 @@ export default class JobUtil {
     userId: string, 
     format = false
   ): Promise<Record<string, number | string>> {
-    const db = new DB();
-    const connection = await db.connect();
-    const jobs = await connection.getRepository(Job).findBy({ userId: userId });
+    const jobs = await dataSource.getRepository(Job).findBy({ userId: userId });
 
     const userSlurmUsage = {
       nodes: 0,

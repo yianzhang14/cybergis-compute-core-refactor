@@ -1,7 +1,0 @@
-{
-    "type": "mysql",
-    "entities": [
-        "production/src/models/**/*.js"
-    ],
-    "synchronize": true
-}

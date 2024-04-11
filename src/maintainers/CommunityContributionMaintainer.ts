@@ -1,4 +1,5 @@
 import SingularityConnector from "../connectors/SingularityConnector";
+import dataSource from "../DB";
 import { BaseFolderUploader, FolderUploaderHelper } from "../FolderUploader";
 import GitUtil from "../lib/GitUtil";
 import * as Helper from "../lib/Helper";
@@ -14,7 +15,7 @@ import BaseMaintainer from "./BaseMaintainer";
  */
 class CommunityContributionMaintainer extends BaseMaintainer {
 
-  public connector!: SingularityConnector;  // connector to communicate with HPC
+  declare public connector: SingularityConnector;  // connector to communicate with HPC
 
   public resultFolderContentManager: ResultFolderContentManager =
     new ResultFolderContentManager();
@@ -33,8 +34,6 @@ class CommunityContributionMaintainer extends BaseMaintainer {
    */
   async onInit() {
     try {
-      const connection = await this.db.connect();
-
       let localExecutableFolder: GitFolder;
       if (
         typeof this.job.localExecutableFolder === "object" &&
@@ -51,7 +50,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       }
 
       // get executable manifest
-      const git = await connection
+      const git = await dataSource
         .getRepository(Git)
         .findOneBy({ id: (localExecutableFolder).gitId });
       if (!git)
@@ -81,7 +80,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
       );
       
       this.connector.setRemoteExecutableFolderPath(uploader.hpcPath);
-      this.job.remoteExecutableFolder = (await connection
+      this.job.remoteExecutableFolder = (await dataSource
         .getRepository(Folder)
         .findOneBy({ id: uploader.id }))!;
 
@@ -97,7 +96,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
         );
 
         this.connector.setRemoteDataFolderPath(uploader.hpcPath);
-        this.job.remoteDataFolder = (await connection
+        this.job.remoteDataFolder = (await dataSource
           .getRepository(Folder)
           .findOneBy({ id: uploader.id }))!;
       } else if (this.job.remoteDataFolder) {
@@ -116,7 +115,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
         this.connector
       );
       this.connector.setRemoteResultFolderPath(uploader.hpcPath);
-      this.job.remoteResultFolder = (await connection
+      this.job.remoteResultFolder = (await dataSource
         .getRepository(Folder)
         .findOneBy({ id: uploader.id }))!;
 

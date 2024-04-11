@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 import { config } from "../../configs/config";
-import DB from "../DB";
+import dataSource from "../DB";
 import { Git } from "../models/Git";
 import {
   executableManifest,
@@ -177,9 +177,8 @@ export default class GitUtil {
 
       // call to update the updatedAt timestamp
       const now = new Date();
-      const db = new DB();
-      const connection = await db.connect();
-      await connection
+
+      await dataSource
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: git.id })
@@ -390,9 +389,7 @@ export default class GitUtil {
   }
 
   public static async findGit(gitId: string): Promise<Git | null> {
-    const db = new DB();
-    const connection = await db.connect();
-    const gitRepo = connection.getRepository(Git);
+    const gitRepo = dataSource.getRepository(Git);
 
     const foundGit = await gitRepo.findOneBy({id :gitId});
 
@@ -488,9 +485,8 @@ class ManifestUtil extends GitUtil {
       }
       // call to update the updatedAt timestamp
       now = new Date();
-      const db = new DB(false);
-      const connection = await db.connect();
-      await connection
+      
+      await dataSource
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: git.id })

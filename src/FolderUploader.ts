@@ -4,7 +4,7 @@ import { hpcConfigMap } from "../configs/config";
 import BaseConnector from "./connectors/BaseConnector";
 import SingularityConnector from "./connectors/SingularityConnector";
 import SlurmConnector from "./connectors/SlurmConnector";
-import DB from "./DB";
+import dataSource from "./DB";
 import { NotImplementedError } from "./errors";
 import FolderUtil from "./lib/FolderUtil";
 import GitUtil from "./lib/GitUtil";
@@ -40,7 +40,6 @@ export abstract class BaseFolderUploader {
   public isComplete: boolean;
   public isFailed: boolean;
 
-  protected db: DB;
   protected connector: Connector;
 
   constructor(hpcName: string, userId: string, connector?: Connector) {
@@ -56,7 +55,6 @@ export abstract class BaseFolderUploader {
 
     this.isComplete = false;
     this.isFailed = false;
-    this.db = new DB();
     this.globusPath = (this.hpcConfig.globus 
       ? path.join(this.hpcConfig.globus.root_path, this.id) 
       : null
@@ -75,7 +73,6 @@ export abstract class BaseFolderUploader {
    */
   protected async register() {
     if (this.isComplete && !this.isFailed) {
-      const connection = await this.db.connect();
       const folder = new Folder();
       folder.id = this.id;
       folder.hpcPath = this.hpcPath;
@@ -85,7 +82,7 @@ export abstract class BaseFolderUploader {
       folder.hpc = this.hpcName;
       folder.userId = this.userId;
 
-      await connection.getRepository(Folder).save(folder);
+      await dataSource.getRepository(Folder).save(folder);
     }
   }
 }
@@ -261,9 +258,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
   }
 
   protected async getUpdateTime(): Promise<number> {
-    const connection = await this.db.connect();
-
-    const exists = await connection.getRepository(Cache).findOneBy({
+    const exists = await dataSource.getRepository(Cache).findOneBy({
       hpc: this.hpcName,
       hpcPath: this.hpcPath
     });
@@ -277,9 +272,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
 
   protected async registerCache() {
     if (this.isComplete && !this.isFailed) {
-      const connection = await this.db.connect();
-
-      const exists = await connection.getRepository(Cache).findOneBy({
+      const exists = await dataSource.getRepository(Cache).findOneBy({
         hpc: this.hpcName,
         hpcPath: this.hpcPath
       });
@@ -289,7 +282,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
         cache.hpc = this.hpcName;
         cache.hpcPath = this.hpcPath;
       
-        await connection.getRepository(Cache).save(cache);
+        await dataSource.getRepository(Cache).save(cache);
       } else {
         exists.update();
       }

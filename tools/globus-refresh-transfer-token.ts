@@ -1,11 +1,9 @@
 import { config, hpcConfigMap } from "../configs/config";
-import DB from "../src/DB";
+import dataSource from "../src/DB";
 import PythonUtil from "../src/lib/PythonUtil";
 import { GlobusTransferRefreshToken } from "../src/models/GlobusTransferRefreshToken";
 
 const main = async () => {
-  const db = new DB(false);
-
   const identities: string[] = [];
   for (const i in hpcConfigMap) {
     if (hpcConfigMap[i].globus) {
@@ -14,8 +12,6 @@ const main = async () => {
       }
     }
   }
-
-  const connection = await db.connect();
 
   let counter = 0;
   for (const identity of identities) {
@@ -32,7 +28,7 @@ const main = async () => {
     );
 
     if (out.transfer_refresh_token) {
-      const globusTransferRefreshTokenRepo = connection.getRepository(
+      const globusTransferRefreshTokenRepo = dataSource.getRepository(
         GlobusTransferRefreshToken
       );
       const g = new GlobusTransferRefreshToken();
@@ -44,7 +40,7 @@ const main = async () => {
     counter++;
   }
 
-  await db.close();
+  await dataSource.destroy();
 };
 
 main(); // eslint-disable-line

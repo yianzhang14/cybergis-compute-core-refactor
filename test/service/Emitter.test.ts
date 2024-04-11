@@ -1,16 +1,15 @@
 import "jest";
 import { config } from "../../configs/config";
-import DB from "../../src/DB";
+import { clearAll } from "../../src/DB";
 import Emitter from "../../src/Emitter";
 import TestHelper from "../TestHelper";
-const db = new DB();
 
 beforeAll(() => {
   config.is_jest = true;
 });
 
 afterEach(async () => {
-  await db.clearAll();
+  await clearAll();
 });
 
 const jobId = "test-job";

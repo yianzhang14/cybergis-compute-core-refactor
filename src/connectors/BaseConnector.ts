@@ -1,7 +1,6 @@
 import { existsSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
 import { config, hpcConfigMap } from "../../configs/config";
-import DB from "../DB";
 import { ConnectorError } from "../errors";
 import FileUtil from "../lib/FolderUtil";  // shouldn't this be registerUtil?
 import * as Helper from "../lib/Helper";
@@ -27,7 +26,6 @@ class BaseConnector {
 
   /** config **/
   public connectorConfig: hpcConfig;
-  public db = new DB();
   protected envCmd = "#!/bin/bash\n";
 
   constructor(
