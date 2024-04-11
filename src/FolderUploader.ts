@@ -274,7 +274,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
     if (this.isComplete && !this.isFailed) {
       const exists = await dataSource.getRepository(Cache).findOneBy({
         hpc: this.hpcName,
-        hpcPath: this.hpcPath
+        hpcPath: this.cachePath
       });
 
       if (exists === null) {
