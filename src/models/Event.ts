@@ -52,7 +52,7 @@ export class Event {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt!: Date;
+    updatedAt?: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -66,7 +66,7 @@ export class Event {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt!: Date;
+    deletedAt?: Date;
 
   /**
    * Set the createdAt time to the current time.

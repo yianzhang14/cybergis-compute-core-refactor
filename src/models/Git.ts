@@ -50,7 +50,7 @@ export class Git {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt!: Date;
+    updatedAt?: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -64,7 +64,7 @@ export class Git {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt!: Date;
+    deletedAt?: Date;
 
   /**
    * Set the createdAt time to the current time.

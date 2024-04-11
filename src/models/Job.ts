@@ -29,10 +29,10 @@ export class Job {
   @PrimaryColumn()
     id!: string;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
     userId?: string;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
     name?: string;
 
   @Column()
@@ -42,13 +42,13 @@ export class Job {
     hpc!: string;
 
   @ManyToOne((_type) => Folder, { onDelete: "CASCADE", nullable: true })
-    remoteExecutableFolder!: Folder;
+    remoteExecutableFolder?: Folder;
 
   @ManyToOne((_type) => Folder, { onDelete: "CASCADE", nullable: true })
-    remoteDataFolder!: Folder;
+    remoteDataFolder?: Folder;
 
   @ManyToOne((_type) => Folder, { onDelete: "CASCADE", nullable: true })
-    remoteResultFolder!: Folder;
+    remoteResultFolder?: Folder;
 
   @Column({
     type: "text",
@@ -65,7 +65,7 @@ export class Job {
         typeof i === "string" ? JSON.parse(i) as NeedUploadFolder : i,
     },
   })
-    localExecutableFolder!: NeedUploadFolder;
+    localExecutableFolder?: NeedUploadFolder;
 
   @Column({
     type: "text",
@@ -80,7 +80,7 @@ export class Job {
         typeof i === "string" ? JSON.parse(i) as NeedUploadFolder : i,
     },
   })
-    localDataFolder!: NeedUploadFolder;
+    localDataFolder?: NeedUploadFolder;
 
   @Column({
     type: "text",
@@ -95,7 +95,7 @@ export class Job {
         typeof i === "string" ? JSON.parse(i) as Record<string, string> : {},
     },
   })
-    param!: Record<string, string>;
+    param?: Record<string, string>;
 
   @Column({
     type: "text",
@@ -110,12 +110,11 @@ export class Job {
         typeof i === "string" ? JSON.parse(i) as Record<string, string> : {},
     },
   })
-    env!: Record<string, string>;
+    env?: Record<string, string>;
 
   @Column({
     type: "text",
     nullable: true,
-    default: null,
     transformer: {
       to: (i: slurm | null | undefined): string | null =>
         i ? JSON.stringify(i) : null,
@@ -125,10 +124,10 @@ export class Job {
   })
     slurm?: slurm;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
     slurmId?: string;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
     credentialId?: string;
 
   @OneToMany((_type) => Event, (event: Event) => event.job)
@@ -162,7 +161,7 @@ export class Job {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt!: Date;
+    updatedAt?: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -176,7 +175,7 @@ export class Job {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt!: Date;
+    deletedAt?: Date;
 
   @Column({
     type: "bigint",
@@ -190,7 +189,7 @@ export class Job {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    initializedAt!: Date;
+    initializedAt?: Date;
 
   @Column({
     type: "bigint",
@@ -204,7 +203,7 @@ export class Job {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    finishedAt!: Date;
+    finishedAt?: Date;
 
   @Column({
     type: "bigint",
@@ -243,23 +242,23 @@ export class Job {
   @Column({ default: false })
     isFailed!: boolean;
 
-  @Column({ nullable: true, default: null })
-    nodes!: number;
+  @Column({ nullable: true })
+    nodes?: number;
 
-  @Column({ nullable: true, default: null })
-    cpus!: number;
+  @Column({ nullable: true })
+    cpus?: number;
 
-  @Column({ nullable: true, default: null })
-    cpuTime!: number;
+  @Column({ nullable: true })
+    cpuTime?: number;
 
-  @Column({ nullable: true, default: null })
-    memory!: number;
+  @Column({ nullable: true })
+    memory?: number;
 
-  @Column({ nullable: true, default: null })
-    memoryUsage!: number;
+  @Column({ nullable: true })
+    memoryUsage?: number;
 
-  @Column({ nullable: true, default: null })
-    walltime!: number;
+  @Column({ nullable: true })
+    walltime?: number;
 
   /**
    * Sorts the logs in the order that they were created
