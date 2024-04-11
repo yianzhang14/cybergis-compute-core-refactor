@@ -283,8 +283,6 @@ class Supervisor {
 
     // look for the job across all hpcs
     for (const hpc in hpcConfigMap) {
-      if (config.is_testing) console.log(`looking in ${hpc}`);
-
       // // look for any jobs queued up TODO: fix this
       // for (let i = 0; i < await this.queues[hpc].length(); i++) {
       //   console.log(`Queue: checking is ${this.queues[hpc][i].id.toString()}`);
@@ -295,13 +293,18 @@ class Supervisor {
       // }
 
       // look for the job in the running jobs
-      for (const job of this.runningJobs[hpc]) {
-        console.log(`RunningJobs: checking is ${job.id.toString()}`);
-        if (job.id === jobId.toString()) {
-          toReturn = job;
-          hpcToAdd = hpc;
+      if (config.is_testing) {
+        console.log(`looking in ${hpc}`);
+        
+        for (const job of this.runningJobs[hpc]) {
+          console.log(`RunningJobs: checking is ${job.id.toString()}`);
+          if (job.id === jobId.toString()) {
+            toReturn = job;
+            hpcToAdd = hpc;
+          }
         }
       }
+      
     }
     
     // if found, cancel it; otherwise log it
