@@ -204,7 +204,7 @@ export class JobQueue extends RedisStore {
     const jobRepo = dataSource.getRepository(Job);
     const job = await jobRepo.findOne({
       where: { id: id }, 
-      select: [
+      relations: [
         "remoteExecutableFolder",
         "remoteDataFolder",
         "remoteResultFolder",

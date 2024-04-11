@@ -418,7 +418,7 @@ export class LocalFolderUploader extends CachedFolderUploader {
    */
   protected async uploadToPath(path: string) {
     // if path does not exist, throw an error
-    if (this.localPath === undefined || !fs.existsSync(this.localPath)) {
+    if (!fs.existsSync(this.localPath)) {
       throw new Error(`could not find folder under path ${this.localPath}`);
     }
 

@@ -18,8 +18,8 @@ class SSHCredentialGuard {
    */
   async validatePrivateAccount(
     hpcName: string,
-    user: string | undefined,
-    password: string | undefined
+    user?: string,
+    password?: string
   ) {
     const hpc = hpcConfigMap[hpcName];
 
@@ -44,8 +44,8 @@ class SSHCredentialGuard {
    * @return {Promise<string>} the assigned redis key/id
    */
   async registerCredential(
-    user: string | undefined, 
-    password: string | undefined
+    user?: string,
+    password?: string
   ): Promise<string> {
     const credentialId = Helper.generateId();
     await this.credentialManager.add(credentialId, {

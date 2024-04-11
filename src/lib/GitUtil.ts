@@ -466,7 +466,9 @@ class ManifestUtil extends GitUtil {
     let secsSinceUpdate = 1000000;
     try {
       // check when last updated if you can. If updatedAt is null this throws error
-      secsSinceUpdate = (now.getTime() - git.updatedAt.getTime()) / 1000.0;
+      secsSinceUpdate = (
+        now.getTime() - (git.updatedAt !== undefined ? git.updatedAt.getTime() : -999999)
+      ) / 1000.0;
     } catch {}
 
     if (secsSinceUpdate > 120) {

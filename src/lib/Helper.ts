@@ -56,7 +56,13 @@ export function job2object(
 
   for (const i of include) {
     if (exclude.includes(i)) continue;
-    if (i in job) out[i] = job[i as keyof Job];
+    if (i in job) {
+      // if (job[i as keyof Job] === undefined) {
+      //   out[i] = null;
+      // } else {
+      out[i] = job[i as keyof Job];
+      // }
+    } 
     else out[i] = null;
   }
   

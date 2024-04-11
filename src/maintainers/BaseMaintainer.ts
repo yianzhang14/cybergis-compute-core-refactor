@@ -33,7 +33,7 @@ abstract class BaseMaintainer {
   public job: Job;
   public hpc: hpcConfig | undefined = undefined;
   public maintainerConfig: maintainerConfig | undefined = undefined;
-  public id: string | undefined = undefined;
+  public id: string;
   public slurm: slurm | undefined = undefined;
 
   /** mutex **/
@@ -59,8 +59,8 @@ abstract class BaseMaintainer {
     Record<string, (_val: string) => boolean> | undefined = undefined;
   public envParamDefault: Record<string, string> = {};
   public envParam: Record<string, string> = {};
-  public appParamValidators = undefined;
-  public appParam: Record<string, string> = {};
+  // public appParamValidators = undefined;
+  // public appParam: Record<string, string> = {};
 
   /** HPC connectors **/
   public connector!: BaseConnector;
@@ -73,10 +73,12 @@ abstract class BaseMaintainer {
   /** constructor **/
   constructor(job: Job) {
     // try to validate the job's environment
-    for (const i in this.envParamValidators) {
-      const val: string = job.env[i];
-      if (val != undefined) {
-        if (this.envParamValidators[i](val)) this.envParam[i] = val;
+    if (job.env !== undefined) {
+      for (const i in this.envParamValidators) {
+        const val: string = job.env[i];
+        if (val != undefined) {
+          if (this.envParamValidators[i](val)) this.envParam[i] = val;
+        }
       }
     }
     

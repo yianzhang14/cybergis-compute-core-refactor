@@ -280,12 +280,12 @@ class BaseConnector {
    * @async
    * Returns the specified path
    *
-   * @param {string} [path=undefined] execution path
+   * @param {string} execution path
    * @param {options} [options={}] dictionary with string options
    * @return {Promise<string>} returns command execution output
    */
   async pwd(
-    path: string | undefined = undefined, 
+    path?: string, 
     options: options = {}
   ): Promise<string | null> {
     let cmd = "pwd;";
@@ -298,12 +298,12 @@ class BaseConnector {
    * @async
    * Returns all of the files/directories in specified path
    *
-   * @param {string} [path=undefined] specified path
+   * @param {string} specified path
    * @param {options} [options={}] dictionary with string options
    * @return {Promise<string | null>} returns command execution output
    */
   async ls(
-    path: string | undefined = undefined, 
+    path?: string, 
     options: options = {}
   ): Promise<string | null> {
     let cmd = "ls;";

@@ -211,7 +211,7 @@ async function initHelloWorldGit() {
       id: "hello_world"
     });
 
-  if (helloWorldGit === undefined) {
+  if (helloWorldGit === null) {
     const git = {
       id: "hello_world",
       address: "https://github.com/cybergis/cybergis-compute-hello-world.git",
@@ -1305,7 +1305,7 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
   try {
     job = await dataSource.getRepository(Job).findOneOrFail({
       where: { id: jobId, userId: res.locals.username as string },
-      select: [
+      relations: [
         "remoteExecutableFolder",
         "remoteDataFolder",
         "remoteResultFolder",
@@ -1444,7 +1444,7 @@ app.get("/job/:jobId/events", authMiddleWare, async function (req, res) {
       .getRepository(Job)
       .findOneOrFail({
         where: { id: jobId, userId: res.locals.username as string },
-        select: ["events"]
+        relations: ["events"]
       });
     res.json(job.events);
   } catch (e) {
@@ -1531,7 +1531,7 @@ app.get("/job/:jobId/logs", authMiddleWare, async function (req, res) {
       .getRepository(Job)
       .findOneOrFail({
         where: { id: jobId, userId: res.locals.username as string },
-        select: ["logs"]
+        relations: ["logs"]
       });
     res.json(job.logs);
   } catch (e) {
@@ -1570,7 +1570,7 @@ app.get("/job/:jobId", authMiddleWare, async function (req, res) {
     
     const job = await dataSource.getRepository(Job).findOneOrFail({
       where: { id: jobId, userId: res.locals.username as string },
-      select: [
+      relations: [
         "remoteExecutableFolder",
         "remoteDataFolder",
         "remoteResultFolder",

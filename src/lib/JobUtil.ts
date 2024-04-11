@@ -23,6 +23,10 @@ export default class JobUtil {
    * @throws Job must have a complete parameter list
    */
   static validateParam(job: Job, paramRules: Record<string, unknown>) {
+    if (job.param === undefined) {
+      throw new Error("job missing input params");
+    }
+    
     for (const i in paramRules) {
       if (!job.param[i]) {
         throw new Error(`job missing input param ${i}`);
