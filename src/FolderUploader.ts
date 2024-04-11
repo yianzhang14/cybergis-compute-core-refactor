@@ -260,7 +260,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
   protected async getUpdateTime(): Promise<number> {
     const exists = await dataSource.getRepository(Cache).findOneBy({
       hpc: this.hpcName,
-      hpcPath: this.hpcPath
+      hpcPath: this.cachePath
     });
 
     if (exists === null) {
@@ -280,7 +280,7 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
       if (exists === null) {
         const cache = new Cache();
         cache.hpc = this.hpcName;
-        cache.hpcPath = this.hpcPath;
+        cache.hpcPath = this.cachePath;
       
         await dataSource.getRepository(Cache).save(cache);
       } else {
