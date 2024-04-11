@@ -1319,8 +1319,6 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
     return;
   }
 
-  console.log(job);
-
   // if already queued, do nothing
   if (job.queuedAt) {
     res
@@ -1334,8 +1332,6 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
     JobUtil.validateJob(job);
     await supervisor.pushJobToQueue(job);
 
-    console.log(job);
-
     // update status of the job
     job.queuedAt = new Date();
     await dataSource
@@ -1348,8 +1344,6 @@ app.post("/job/:jobId/submit", authMiddleWare, async function (req, res) {
     res.status(402).json({ error: Helper.assertError(e).toString() });
     return;
   }
-
-  console.log(job);
 
   res.json(Helper.job2object(job));
 });

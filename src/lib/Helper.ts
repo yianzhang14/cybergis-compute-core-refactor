@@ -59,6 +59,9 @@ export function job2object(
     if (i in job) out[i] = job[i as keyof Job];
     else out[i] = null;
   }
+
+  console.log("-------------------------------");
+  console.log(out);
   return out;
 }
 
