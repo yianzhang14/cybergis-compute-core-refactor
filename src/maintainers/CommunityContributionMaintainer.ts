@@ -75,6 +75,7 @@ class CommunityContributionMaintainer extends BaseMaintainer {
         await FolderUploaderHelper.cachedUploadGit(
           localExecutableFolder,
           this.job.hpc,
+          this.job.userId,
           this.connector
         )
       );

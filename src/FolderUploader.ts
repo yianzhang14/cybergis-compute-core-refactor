@@ -358,8 +358,6 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
     if (status.includes("SUCCEEDED")) {
       this.isComplete = true;
     }    
-
-    await this.register();
   }
 
   /**
@@ -369,6 +367,7 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
   public async upload() {
     // start the transfer
     await this.uploadToFolder(this.to);
+    await this.register();
   }
 
   /**
@@ -433,8 +432,6 @@ export class LocalFolderUploader extends CachedFolderUploader {
 
     // register upload in database & mark complete
     this.isComplete = true;
-
-    await this.register();
   }
 
   /**
@@ -444,6 +441,8 @@ export class LocalFolderUploader extends CachedFolderUploader {
    */
   public async upload() {
     await this.uploadToPath(this.hpcPath);
+
+    await this.register();
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -493,7 +492,9 @@ export class GitFolderUploader extends LocalFolderUploader   {
       await this.uploadToPath(this.cachePath);
 
       await this.registerCache();
-    }
+    } 
+
+    await this.register();
   }
 }
 
@@ -577,7 +578,6 @@ export class FolderUploaderHelper {
    * @param {NeedUploadFolder} from either a GlobusFolder, GitFolder, or LocalFolder
    * @param {string} hpcName name of hpc to uplaod to
    * @param {string} userId current user
-   * @param {string} [jobId=""] job associated with the folder upload (optional)
    * @param {Connector} [connector=null] connector to connect to HPC with, if needed
    * @throws {Error} invalid file type/format
    * @return {Promise<BaseFolderUploader>} folder uploader object used to upload the folder, can check if upload was successful via {uploader}.isComplete
@@ -585,6 +585,7 @@ export class FolderUploaderHelper {
   static async cachedUploadGit(
     from: GitFolder,
     hpcName: string,
+    userId: string,
     connector: Connector | null = null
   ): Promise<CachedFolderUploader> {
     // if type not specified, throw an error
@@ -593,7 +594,7 @@ export class FolderUploaderHelper {
     const uploader = new GitFolderUploader(
       from,
       hpcName,
-      "cache",
+      userId,
       connector
     );
 
