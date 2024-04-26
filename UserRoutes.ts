@@ -3,7 +3,7 @@ import * as path from "path";
 import {
   jupyterGlobusMap
 } from "./configs/config";
-import { authMiddleWare } from "./server";
+import { authMiddleWare } from "./ServerUtil";
 import dataSource from "./src/DB";
 import GlobusUtil from "./src/lib/GlobusUtil";
 import * as Helper from "./src/lib/Helper";

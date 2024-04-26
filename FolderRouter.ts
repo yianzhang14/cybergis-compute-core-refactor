@@ -3,7 +3,7 @@ import * as path from "path";
 import {
   hpcConfigMap,
 } from "./configs/config";
-import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./server";
+import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./ServerUtil";
 import dataSource from "./src/DB";
 import GlobusUtil from "./src/lib/GlobusUtil";
 import * as Helper from "./src/lib/Helper";

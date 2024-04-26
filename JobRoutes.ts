@@ -3,7 +3,7 @@ import {
   hpcConfigMap,
   maintainerConfigMap,
 } from "./configs/config";
-import { authMiddleWare, requestErrors, validator, schemas, sshCredentialGuard, prepareDataForDB, supervisor, resultFolderContent } from "./server";
+import { authMiddleWare, requestErrors, validator, schemas, sshCredentialGuard, prepareDataForDB, supervisor, resultFolderContent } from "./ServerUtil";
 import dataSource from "./src/DB";
 import * as Helper from "./src/lib/Helper";
 import JobUtil from "./src/lib/JobUtil";

@@ -1,7 +1,7 @@
 import express = require("express");
 import * as fs from "fs";
 import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "./configs/config";
-import { authMiddleWare, statistic } from "./server";
+import { authMiddleWare, statistic } from "./ServerUtil";
 import dataSource from "./src/DB";
 import * as Helper from "./src/lib/Helper";
 import { Job } from "./src/models/Job";
