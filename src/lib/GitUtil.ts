@@ -28,7 +28,7 @@ const exec: Function = promisify(require("child_process").exec); // eslint-disab
  */
 export default class GitUtil {
 
-  static cache: Record<string, executableManifest>;
+  static cache: Record<string, executableManifest> = {};
 
   /**
    * Gets the local path of a given git repository. 
