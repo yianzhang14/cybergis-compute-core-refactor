@@ -28,6 +28,7 @@ const exec: Function = promisify(require("child_process").exec); // eslint-disab
  */
 export default class GitUtil {
 
+  static cache: Record<string, executableManifest>;
 
   /**
    * Gets the local path of a given git repository. 
@@ -105,10 +106,6 @@ export default class GitUtil {
   }
   
   protected static async outOfDate(git: Git): Promise<boolean> {
-    // if the commit is specified, we cannot be out of date
-    if (git.sha) {
-      return false;
-    }
 
     const localPath = this.getLocalPath(git.id);
 
@@ -119,10 +116,14 @@ export default class GitUtil {
       dir: localPath,
       url: git.address
     });
-    const remoteSha = remote.fetchHead;
+    let remoteSha = remote.fetchHead;
 
     if (remoteSha === null) {
       return true;
+    }
+
+    if (git.sha) {
+      remoteSha = git.sha;
     }
 
     const local = await log({
@@ -133,7 +134,7 @@ export default class GitUtil {
 
     const localSha = local[0].oid;
 
-    return remoteSha !== localSha;
+    return (git.sha && localSha == git.sha) || remoteSha !== localSha;
   }
   
   /**
@@ -142,14 +143,14 @@ export default class GitUtil {
    * @static
    * @param {Git} git git object
    */
-  protected static async refreshGit(git: Git) {
+  protected static async refreshGit(git: Git): Promise<boolean> {
     const localPath = this.getLocalPath(git.id);
     await FolderUtil.removeZip(localPath);
     
     // clone if git repo not exits locally
     if (!fs.existsSync(localPath)) {
       await this.deleteAndPull(git);
-      return;
+      return true;
     }
 
     if (await this.outOfDate(git)) {
@@ -182,10 +183,13 @@ export default class GitUtil {
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: git.id })
-        .set({"updatedAt" : now})
+        .set({ "updatedAt" : now })
         .execute();
+
+      return true;
     } else {
       console.log(`${git.id} not out of date, skipping update`);
+      return false;
     }
   }
 
@@ -201,7 +205,11 @@ export default class GitUtil {
     const localPath = this.getLocalPath(git.id);
     const executableFolderPath = path.join(localPath, "manifest.json");
 
-    await this.refreshGit(git);
+    const refreshed: boolean = await this.refreshGit(git);
+
+    if (!refreshed && git.id in GitUtil.cache) {
+      return GitUtil.cache[git.id];
+    } 
 
     let rawExecutableManifest: string;
     try {
@@ -217,7 +225,10 @@ export default class GitUtil {
       ).toString();
     }
 
-    return this.processExecutableManifest(rawExecutableManifest, git.address);
+    const result = this.processExecutableManifest(rawExecutableManifest, git.address);
+    GitUtil.cache[git.id] = result;
+
+    return result;
   }
 
   /**
@@ -391,7 +402,7 @@ export default class GitUtil {
   public static async findGit(gitId: string): Promise<Git | null> {
     const gitRepo = dataSource.getRepository(Git);
 
-    const foundGit = await gitRepo.findOneBy({id :gitId});
+    const foundGit = await gitRepo.findOneBy({ id :gitId });
 
     return foundGit;
   }
@@ -492,7 +503,7 @@ class ManifestUtil extends GitUtil {
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: git.id })
-        .set({"updatedAt" : now})
+        .set({ "updatedAt" : now })
         .execute();
     }
     else {

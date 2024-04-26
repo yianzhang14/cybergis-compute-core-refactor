@@ -549,7 +549,7 @@ class BaseConnector {
     const localPath : string = path.join(tmp_dir, tmp_file);
 
     // write the content to the tmp file
-    writeFileSync(localPath, contentString, {flag: "w"});
+    writeFileSync(localPath, contentString, { flag: "w" });
 
     // upload the file
     await this.transferFile(localPath, remotePath);

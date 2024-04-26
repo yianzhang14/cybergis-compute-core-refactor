@@ -1,5 +1,5 @@
 import * as path from "path";
-import { containerConfigMap, hpcConfigMap, kernelConfigMap} from "../../configs/config";
+import { containerConfigMap, hpcConfigMap, kernelConfigMap } from "../../configs/config";
 import * as Helper from "../lib/Helper";
 import { slurm, executableManifest } from "../types";
 import SlurmConnector from "./SlurmConnector";

@@ -92,6 +92,10 @@ module.exports = {
         ignoreComments: true, 
         ignoreStrings: true 
       }
+    ],
+    "@stylistic/object-curly-spacing": [
+      "error",
+      "always"
     ]
   }
 };
