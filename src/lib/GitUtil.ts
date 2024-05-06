@@ -1,6 +1,6 @@
 import { clone, pull, fetch, checkout, log } from "isomorphic-git";
 import http from "isomorphic-git/http/node";
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
@@ -49,7 +49,7 @@ export default class GitUtil {
    */
   protected static async deleteAndPull(git: Git) {
     const localPath = this.getLocalPath(git.id);
-    // eslint-disable-next-line
+
     rimraf.sync(localPath);  // deletes everything
 
     await fs.promises.mkdir(localPath);
