@@ -53,22 +53,20 @@ export default class GitUtil {
     rimraf.sync(localPath);  // deletes everything
 
     await fs.promises.mkdir(localPath);
-    clone({
+    await clone({
       fs: fs.promises, 
       http,
       dir: localPath,
       url: git.address
-    })
-      .catch((err) => {console.error(err);});
+    });
 
     if (git.sha) {
       // if a sha is specified, checkout that commit
-      checkout({
+      await checkout({
         fs: fs.promises,
         dir: localPath,
         ref: git.sha
-      })
-        .catch((err) => {console.error(err);});
+      });
     }
   }
 
@@ -159,17 +157,17 @@ export default class GitUtil {
       try {
         // try checking out the sha or pulling latest
         if (git.sha) {
-          checkout({
+          await checkout({
             fs: fs.promises,
             dir: localPath,
             ref: git.sha
-          }).catch((err) => {console.error(err);});
+          });
         } else {
-          pull({
+          await pull({
             fs: fs.promises, 
             http,
             dir: localPath
-          }).catch(err => {console.error(err);});
+          });
         }
       } catch {
         // if there is an error, delete and repull
