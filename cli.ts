@@ -55,7 +55,7 @@ cmd
         return;
       }
 
-      const i: {address?: string, sha?: string} = {};
+      const i: { address?: string, sha?: string } = {};
 
       if (cmd.address) i.address = cmd.address;
       if (cmd.sha) i.sha = cmd.sha;
