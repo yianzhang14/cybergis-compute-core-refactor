@@ -486,7 +486,8 @@ export class GitFolderUploader extends LocalFolderUploader   {
     }
 
     const cacheUpdateTime = await this.getUpdateTime();
-    const localUpdateTime = await GitUtil.getLastCommitTime(git);
+    // account for milliseconds
+    const localUpdateTime = await GitUtil.getLastCommitTime(git) * 1000;
 
     if (cacheUpdateTime < localUpdateTime) {
       await this.uploadToPath(this.cachePath);
