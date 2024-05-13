@@ -13,14 +13,14 @@ jobs:
     - run: |
         npm ci
         
-        for file in configs/examples/*.example.json; do
+        for file in configs/*.example.json; do
           filename=$(basename "$file" .example.json)
           new_filename="${filename%.example}"
           
           cp "$file" "configs/$new_filename.json"
         done
 
-        cp configs/examples/config.example.json config.json
+        cp configs/config.example.json config.json
 
         npm run build
 
@@ -35,13 +35,13 @@ jobs:
       run: |
         npm ci
 
-        for file in configs/examples/*.example.json; do
+        for file in configs/*.example.json; do
           filename=$(basename "$file" .example.json)
           new_filename="${filename%.example}"
           
           cp "$file" "configs/$new_filename.json"
         done
 
-        cp configs/examples/config.example.json config.json
+        cp configs/config.example.json config.json
 
         npm run lint
