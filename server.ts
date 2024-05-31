@@ -9,7 +9,7 @@ import swaggerUI = require("swagger-ui-express");
 import {
   config,
 } from "./configs/config";
-import folderRouter from "./FolderRouter";
+import folderRouter from "./FolderRoutes";
 import gitRouter from "./GitRoutes";
 import infoRouter from "./InfoRoutes";
 import jobRouter from "./JobRoutes";
