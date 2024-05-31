@@ -8,7 +8,7 @@ import * as Helper from "./lib/Helper";
 import BaseMaintainer from "./maintainers/BaseMaintainer";
 import { Job } from "./models/Job";
 import { JobQueue } from "./Redis";
-import { SSH } from "./types";
+import { SSH, callableFunction } from "./types";
 
 /**
  * Manages 
@@ -154,7 +154,7 @@ class Supervisor {
    */
   async createMaintainerWorker(job: Job) {
     Helper.nullGuard(job.maintainerInstance);  // should have been initialized on job creation
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     // keep looping while the job is not finished
     while (true) {  // eslint-disable-line no-constant-condition
       // get ssh connector from pool
@@ -171,15 +171,15 @@ class Supervisor {
       if (!ssh.connection.isConnected()) {
         try {
           // wraps command with backoff -> takes lambda function and array of inputs to execute command
-          await Helper.runCommandWithBackoff(async (ssh1: SSH) => {
+          await Helper.runCommandWithBackoff((async (ssh1: SSH) => {
             if (!ssh1.connection.isConnected()) {
               await ssh1.connection.connect(ssh1.config);
             }
-            ssh1.connection.execCommand("echo");
-          }, [ssh], null);
+            await ssh1.connection.execCommand("echo");
+          }) as callableFunction, [ssh], null);
         } catch (e) {
-          console.log(`job [${job.id}]: Caught ${e}`)
-          this.emitter.registerEvents(
+          console.log(`job [${job.id}]: Caught ${Helper.assertError(e).toString()}`);
+          await this.emitter.registerEvents(
             job,
             "JOB_FAILED",
             `job [${job.id}] failed because the HPC could not connect within the allotted time`

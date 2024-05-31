@@ -1,5 +1,6 @@
 import { config, hpcConfigMap, jupyterGlobusMap } from "../../configs/config";
 import { Job } from "../models/Job";
+import { callableFunction } from "../types";
 // import * as fs from "fs";
 
 
@@ -183,10 +184,14 @@ export function nullGuard<T>(x: null | T | undefined): asserts x is T {
    * @param parameters - What the function is input as parameters (in the form of one array)
    * @param printOnError - Printed with error when catch block reached
    */
-export async function runCommandWithBackoff(funcCall: (...args: any[]) => {}, parameters: any[], printOnError: string | null) {
+export async function runCommandWithBackoff(
+  funcCall: callableFunction, 
+  parameters: unknown[], 
+  printOnError: string | null
+) {
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  var wait = 0;
-  var end = false;
+  let wait = 0;
+  let end = false;
 
   while (true && !end) {
     if (wait > 100) {

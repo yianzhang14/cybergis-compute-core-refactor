@@ -5,7 +5,7 @@ import { ConnectorError } from "../errors";
 import FileUtil from "../lib/FolderUtil";  // shouldn't this be registerUtil?
 import * as Helper from "../lib/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
-import { options, hpcConfig, SSH } from "../types";
+import { options, hpcConfig, SSH, callableFunction } from "../types";
 import connectionPool from "./ConnectionPool";
 
 /**
@@ -184,9 +184,9 @@ class BaseConnector {
       
       // try to get the from file via ssh/scp and remove the compressed folder afterwards
       // wraps command with backoff -> takes lambda function and array of inputs to execute command
-      await Helper.runCommandWithBackoff.call(this, async (to1: string, zipPath: string) => {
+      await Helper.runCommandWithBackoff.call(this, (async (to1: string, zipPath: string) => {
         await this.ssh().connection.getFile(to1, zipPath);
-      }, [to, fromZipFilePath], "Trying to download file again");
+      }) as callableFunction, [to, fromZipFilePath], "Trying to download file again");
       await this.rm(fromZipFilePath);
 
       // decompress the transferred file into the toZipFilePath directory
@@ -218,9 +218,9 @@ class BaseConnector {
       
       // attempt to send the from file to the to folder
       // wraps command with backoff -> takes lambda function and array of inputs to execute command
-      await Helper.runCommandWithBackoff.call(this, async (from1: string, to1: string) => {
+      await Helper.runCommandWithBackoff.call(this, (async (from1: string, to1: string) => {
         await this.ssh().connection.putFile(from1, to1);
-      }, [from, to], "Trying again to transfer file");
+      }) as callableFunction, [from, to], "Trying again to transfer file");
     } catch (e) {
       const error =
         `unable to put file from ${from} to ${to}: ` + Helper.assertError(e).toString();

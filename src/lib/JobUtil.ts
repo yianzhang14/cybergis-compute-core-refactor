@@ -197,7 +197,7 @@ export default class JobUtil {
         val)
       ) {
         throw new Error(
-          `slurm config ${field} exceeds the threshold of ${slurmCeiling[field as keyof slurm] as string} (current value ${val})`  // eslint-disable-line @stylistic/max-len
+          `slurm config ${field} exceeds the threshold of ${slurmCeiling[field as keyof slurm] as string} (current value ${val})`
         );
       }
     }

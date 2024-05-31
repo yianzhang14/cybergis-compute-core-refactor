@@ -379,3 +379,5 @@ export interface updateJobBody {
   remoteDataFolder?: object,
   remoteExecutableFolder?: object,
 }
+
+export type callableFunction = (..._args: unknown[]) => unknown;
