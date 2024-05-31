@@ -197,7 +197,7 @@ export async function runCommandWithBackoff(funcCall: (...args: any[]) => {}, pa
       await funcCall(...parameters);
       end = true;
     } catch (e) {
-      console.error(printOnError + e.stack);
+      console.error(printOnError ?? "" + assertError(e).stack);
     }
     wait = wait == 0 ? 2 : wait * wait;
   }

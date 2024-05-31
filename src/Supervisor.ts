@@ -9,11 +9,6 @@ import BaseMaintainer from "./maintainers/BaseMaintainer";
 import { Job } from "./models/Job";
 import { JobQueue } from "./Redis";
 import { SSH } from "./types";
-import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
-import connectionPool from "./connectors/ConnectionPool";
-import * as events from "events";
-import DB from "./DB";
-import NodeSSH = require("node-ssh");
 
 /**
  * Manages 
@@ -184,7 +179,7 @@ class Supervisor {
           }, [ssh], null);
         } catch (e) {
           console.log(`job [${job.id}]: Caught ${e}`)
-          self.emitter.registerEvents(
+          this.emitter.registerEvents(
             job,
             "JOB_FAILED",
             `job [${job.id}] failed because the HPC could not connect within the allotted time`

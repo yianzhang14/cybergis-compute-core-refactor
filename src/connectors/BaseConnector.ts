@@ -7,8 +7,6 @@ import * as Helper from "../lib/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
 import { options, hpcConfig, SSH } from "../types";
 import connectionPool from "./ConnectionPool";
-import { config, hpcConfigMap } from "../../configs/config";
-import FileUtil from "../lib/FolderUtil";
 
 /**
  * Base class for connecting with the HPC environment, mainly via shell scripts.
