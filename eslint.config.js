@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires, no-undef */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires */
 
 const globals = require("globals");
 const eslint = require("@eslint/js");
@@ -13,6 +13,9 @@ const compat = new FlatCompat({
 
 module.exports = [
   ...compat.config({
+    env: {
+      node: true
+    },
     parserOptions: {
       ecmaVersion: "latest",
       project: ["tsconfig(.*)?.json"]
