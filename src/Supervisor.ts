@@ -9,6 +9,11 @@ import BaseMaintainer from "./maintainers/BaseMaintainer";
 import { Job } from "./models/Job";
 import { JobQueue } from "./Redis";
 import { SSH } from "./types";
+import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
+import connectionPool from "./connectors/ConnectionPool";
+import * as events from "events";
+import DB from "./DB";
+import NodeSSH = require("node-ssh");
 
 /**
  * Manages 
@@ -154,7 +159,7 @@ class Supervisor {
    */
   async createMaintainerWorker(job: Job) {
     Helper.nullGuard(job.maintainerInstance);  // should have been initialized on job creation
-
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     // keep looping while the job is not finished
     while (true) {  // eslint-disable-line no-constant-condition
       // get ssh connector from pool
@@ -168,22 +173,31 @@ class Supervisor {
         ssh = connectionPool[job.id].ssh;
       }
 
-      // connect ssh & run
-      try {
-        if (!ssh.connection.isConnected())
-          await ssh.connection.connect(ssh.config);
-        await ssh.connection.execCommand("echo"); // test connection
-
-        if (job.maintainerInstance.isInit) {
-          await job.maintainerInstance.maintain();
-        } else {
-          await job.maintainerInstance.init();
+      if (!ssh.connection.isConnected()) {
+        try {
+          // wraps command with backoff -> takes lambda function and array of inputs to execute command
+          await Helper.runCommandWithBackoff(async (ssh1: SSH) => {
+            if (!ssh1.connection.isConnected()) {
+              await ssh1.connection.connect(ssh1.config);
+            }
+            ssh1.connection.execCommand("echo");
+          }, [ssh], null);
+        } catch (e) {
+          console.log(`job [${job.id}]: Caught ${e}`)
+          self.emitter.registerEvents(
+            job,
+            "JOB_FAILED",
+            `job [${job.id}] failed because the HPC could not connect within the allotted time`
+          );
         }
-      } catch (e) {
-        if (config.is_testing) console.error(Helper.assertError(e).stack);
-        continue;
+        
       }
 
+      if (job.maintainerInstance.isInit) {
+        await job.maintainerInstance.maintain();
+      } else {
+        await job.maintainerInstance.init();
+      }
       // emit events & logs
       const events = job.maintainerInstance.dumpEvents();
       const logs = job.maintainerInstance.dumpLogs();
@@ -319,3 +333,4 @@ class Supervisor {
 }
 
 export default Supervisor;
+

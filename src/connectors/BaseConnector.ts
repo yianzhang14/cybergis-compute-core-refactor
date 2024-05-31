@@ -7,6 +7,8 @@ import * as Helper from "../lib/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
 import { options, hpcConfig, SSH } from "../types";
 import connectionPool from "./ConnectionPool";
+import { config, hpcConfigMap } from "../../configs/config";
+import FileUtil from "../lib/FolderUtil";
 
 /**
  * Base class for connecting with the HPC environment, mainly via shell scripts.
@@ -183,7 +185,10 @@ class BaseConnector {
         );
       
       // try to get the from file via ssh/scp and remove the compressed folder afterwards
-      await this.ssh().connection.getFile(to, fromZipFilePath);
+      // wraps command with backoff -> takes lambda function and array of inputs to execute command
+      await Helper.runCommandWithBackoff.call(this, async (to1: string, zipPath: string) => {
+        await this.ssh().connection.getFile(to1, zipPath);
+      }, [to, fromZipFilePath], "Trying to download file again");
       await this.rm(fromZipFilePath);
 
       // decompress the transferred file into the toZipFilePath directory
@@ -214,7 +219,10 @@ class BaseConnector {
         );
       
       // attempt to send the from file to the to folder
-      await this.ssh().connection.putFile(from, to);
+      // wraps command with backoff -> takes lambda function and array of inputs to execute command
+      await Helper.runCommandWithBackoff.call(this, async (from1: string, to1: string) => {
+        await this.ssh().connection.putFile(from1, to1);
+      }, [from, to], "Trying again to transfer file");
     } catch (e) {
       const error =
         `unable to put file from ${from} to ${to}: ` + Helper.assertError(e).toString();

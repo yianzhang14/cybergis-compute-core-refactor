@@ -176,3 +176,29 @@ export function nullGuard<T>(x: null | T | undefined): asserts x is T {
     `Variable is undefined/null when it should not be. Assertion at ${frame[0]}, ${functionName}: ${lineNumber}`
   );
 }
+
+/**
+   *
+   * @param funcCall - The function that is run with backoff
+   * @param parameters - What the function is input as parameters (in the form of one array)
+   * @param printOnError - Printed with error when catch block reached
+   */
+export async function runCommandWithBackoff(funcCall: (...args: any[]) => {}, parameters: any[], printOnError: string | null) {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  var wait = 0;
+  var end = false;
+
+  while (true && !end) {
+    if (wait > 100) {
+      throw new Error("The function was attempted too mant times unsuccessfully");
+    }
+    try {
+      await sleep(wait * 1000);
+      await funcCall(...parameters);
+      end = true;
+    } catch (e) {
+      console.error(printOnError + e.stack);
+    }
+    wait = wait == 0 ? 2 : wait * wait;
+  }
+}
