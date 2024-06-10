@@ -19,7 +19,7 @@
       "job_pool_capacity": 10,
       "globus": {
         "identity": "apadmana@illinois.edu",
-        "endpoint": "69c2ebd2-c731-11ed-9921-cb2cff506ca5",
+        "endpoint": "894f743e-3aee-4dee-83c6-54865cea7b33",
         "root_path": "/"
       },
       "mount": {
@@ -118,6 +118,34 @@
       "allowlist": [],
       "denylist": []
     },
+    "anvil_community_highmem": {
+      "ip": "anvil.rcac.purdue.edu",
+      "port": 22,
+      "is_community_account": true,
+      "community_login": {
+        "user": "x-cybergis",
+        "use_local_key": false,
+        "external_key": {
+          "private_key_path": "/job_supervisor/keys/cigi-gisolve.key",
+          "passphrase": null
+        }
+      },
+      "root_path": "/anvil/scratch/x-cybergis/compute/",
+      "job_pool_capacity": 10,
+      "globus": {
+        "identity": "apadmana@illinois.edu",
+        "endpoint": "57b5b1f2-4bc5-41b9-a0e1-5337f5a9df4f",
+        "root_path": "/"
+      },
+      "mount": {
+        "/anvil/projects/x-cis220065/x-cybergis/compute": "/compute_shared",
+        "/anvil/scratch/x-cybergis/compute": "/compute_scratch"
+      },
+      "init_sbatch_script": ["module load gcc", "module load openmpi"],
+      "init_sbatch_options": ["#SBATCH --partition=highmem"],
+      "allowlist": [],
+      "denylist": []
+    },
     "aces_community": {
       "ip": "aces-login1.hprc.tamu.edu",
       "port": 8822,
@@ -142,9 +170,10 @@
       "init_sbatch_script": ["module load foss/2022b"],
       "init_sbatch_options": ["#SBATCH --nodes=1"],
       "allowlist": [
-        "alexandermichels@cybergisx.cigi.illinois.edu"
+        "alexandermichels@cybergisx.cigi.illinois.edu",
+        "rohan_debayan@cybergisx.cigi.illinois.edu"
       ],
       "denylist": []
     }
-}
   
+  }
