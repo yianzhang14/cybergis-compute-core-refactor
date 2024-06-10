@@ -1,76 +1,54 @@
-import Helper from "./Helper";
-import { credential } from "./types";
-import { config, hpcConfigMap } from "../configs/config";
-const NodeSSH = require("node-ssh");
-const redis = require("redis");
-const { promisify } = require("util");
-
-class CredentialManager {
-  private redis = {
-    getValue: null,
-    setValue: null,
-    delValue: null,
-  };
-
-  private isConnected = false;
-
-  async add(key: string, cred: credential) {
-    await this.connect();
-    await this.redis.setValue(key, JSON.stringify(cred));
-  }
-
-  async get(key: string): Promise<credential> {
-    await this.connect();
-    return JSON.parse(await this.redis.getValue(key));
-  }
-
-  private async connect() {
-    if (this.isConnected) return;
-
-    var client = new redis.createClient({
-      host: config.redis.host,
-      port: config.redis.port,
-    });
-
-    if (config.redis.password != null && config.redis.password != undefined) {
-      var redisAuth = promisify(client.auth).bind(client);
-      await redisAuth(config.redis.password);
-    }
-
-    this.redis.getValue = promisify(client.get).bind(client);
-    this.redis.setValue = promisify(client.set).bind(client);
-    this.redis.delValue = promisify(client.del).bind(client);
-    this.isConnected = true;
-  }
-}
+import NodeSSH = require("node-ssh");
+import { hpcConfigMap } from "../configs/config";
+import * as Helper from "./lib/Helper";
+import { CredentialManager } from "./Redis";
 
 class SSHCredentialGuard {
   private credentialManager = new CredentialManager();
 
   private ssh = new NodeSSH();
-
+  
+  /**
+   * Tries to establish an SSH connection with the hpc.
+   *
+   * @param {string} hpcName name of the hpc to check with
+   * @param {string} user username (not used)
+   * @param {string} password
+   * @throws {Error} may be unable to cross check crecdentials with a given hpc
+   */
   async validatePrivateAccount(
     hpcName: string,
-    user: string,
-    password: string
-  ): Promise<void> {
+    user?: string,
+    password?: string
+  ) {
     const hpc = hpcConfigMap[hpcName];
+
     try {
       await this.ssh.connect({
         host: hpc.ip,
         port: hpc.port,
-        user: user,
+        username: user,
         password: password,
       });
-      await this.ssh.dispose();
+      this.ssh.dispose();
     } catch (e) {
       throw new Error(`unable to check credentials with ${hpcName}`);
     }
   }
 
-  async registerCredential(user: string, password: string): Promise<string> {
+  /**
+   * Registers a credential onto the redis store with a generated Id as the key. 
+   *
+   * @param {string} user username
+   * @param {string} password
+   * @return {Promise<string>} the assigned redis key/id
+   */
+  async registerCredential(
+    user?: string,
+    password?: string
+  ): Promise<string> {
     const credentialId = Helper.generateId();
-    this.credentialManager.add(credentialId, {
+    await this.credentialManager.add(credentialId, {
       id: credentialId,
       user: user,
       password: password,

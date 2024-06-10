@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import NodeSSH = require("node-ssh");
 import { ConnectConfig } from "ssh2";
 import { Prompt } from "ssh2-streams";
@@ -55,7 +56,7 @@ export interface integerRule {
   min?: number;
   step?: number;
   default_value: number;
-  unit?: unit;
+  unit: unit;
 }
 
 export interface stringOptionRule {
@@ -88,7 +89,7 @@ export interface rawAccessToken {
   alg: string;
   payload: {
     encoded: string;
-    decoded: any;
+    decoded: unknown;
   };
   hash: string;
   id: string;
@@ -101,8 +102,8 @@ export interface secretToken {
 
 export interface credential {
   id: string;
-  user: string;
-  password: string;
+  user?: string;
+  password?: string;
 }
 
 export interface slurm {
@@ -134,19 +135,19 @@ export interface secretTokenCache {
 
 export interface options {
   cwd?: string;
-  execOptions?: any;
+  execOptions?: unknown;
   encoding?: BufferEncoding;
 }
 
 export interface localKey {
   private_key_path: string;
-  passphrase?: any;
+  passphrase?: unknown;
 }
 
 export interface redis {
   host: string;
   port: number;
-  password?: any;
+  password?: string;
 }
 
 export interface mysql {
@@ -163,7 +164,7 @@ export interface localFileSystem {
   root_path: string;
 }
 
-export interface config {
+export interface baseConfig {
   local_key: localKey;
   server_port: number;
   server_ip: string;
@@ -198,13 +199,11 @@ export interface hpcConfig {
   init_sbatch_options: string[];
   description?: string;
   globus?: {
-    identity?: string;
-    endpoint?: string;
-    root_path?: string;
+    identity: string;
+    endpoint: string;
+    root_path: string;
   };
-  mount: {
-    [keys: string]: string;
-  };
+  mount: Record<string, string>;
   slurm_input_rules?: slurmInputRules;
   slurm_global_cap: slurm;
   xsede_job_log_credential: XSEDEJobLogCredential;
@@ -264,19 +263,15 @@ export interface executableManifest {
   repository?: string;
   require_upload_data?: boolean;
   slurm_input_rules?: slurmInputRules;
-  param_rules?: { [keys: string]: any };
+  param_rules?: Record<string, stringOptionRule | integerRule>;
   default_result_folder_downloadable_path?: string;
 }
 
 export interface containerConfig {
   dockerfile?: string;
   dockerhub?: string;
-  hpc_path: { [keys: string]: string };
-  mount: {
-    [keys: string]: {
-      [keys: string]: string;
-    };
-  };
+  hpc_path: Record<string, string>;
+  mount: Record<string, Record<string, string>>;
 }
 
 export interface kernelConfig {
@@ -307,8 +302,8 @@ export interface SSH {
 }
 
 export interface jobMaintainerUpdatable {
-  param?: { [keys: string]: string };
-  env?: { [keys: string]: string };
+  param?: Record<string, string>;
+  env?: Record<string, string>;
   slurm?: slurm;
   slurmId?: string;
   nodes?: number;
@@ -322,25 +317,67 @@ export interface jobMaintainerUpdatable {
   remoteDataFolder?: Folder;
 }
 
-export interface GlobusFolder {
-  type?: string;
-  endpoint?: string;
-  path?: string;
+export interface BaseFolder {
+  type: "globus" | "git" | "local" | "empty";
 }
 
-export interface GitFolder {
-  type?: string;
-  gitId?: string;
+export interface GlobusFolder extends BaseFolder {
+  type: "globus";
+  endpoint: string;
+  path: string;
 }
 
-export interface LocalFolder {
-  type?: string;
-  localPath?: string;
+export interface GitFolder extends BaseFolder {
+  type: "git";
+  gitId: string;
 }
 
-export interface folderEditable {
-  name?: string;
-  isWritable?: boolean;
+export interface LocalFolder extends BaseFolder {
+  type: "local";
+  localPath: string;
+}
+
+export interface EmptyFolder {
+  type: "empty"
 }
 
 export type NeedUploadFolder = GlobusFolder | GitFolder | LocalFolder;
+
+export interface authReqBody {
+  jupyterhubApiToken: string
+}
+
+export interface updateFolderBody { 
+  jupyterhubApiToken: string, 
+  name?: string, 
+  isWritable?: boolean 
+}
+
+export interface initGlobusDownloadBody { 
+  jupyterhubApiToken: string, 
+  toEndpoint: string, 
+  toPath: string, 
+  jobId?: string, 
+  fromPath?: string 
+}
+
+export interface createJobBody { 
+  jupyterhubApiToken: string, 
+  maintainer?: string, 
+  hpc?: string, 
+  user?: string, 
+  password?: string 
+}
+
+export interface updateJobBody {
+  jupyterhubApiToken: string,
+  param?: object,
+  env?: object,
+  slurm?: object,
+  localExecutableFolder?: object,
+  localDataFolder?: object,
+  remoteDataFolder?: object,
+  remoteExecutableFolder?: object,
+}
+
+export type callableFunction = (..._args: unknown[]) => unknown;

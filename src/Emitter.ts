@@ -1,30 +1,38 @@
-import DB from "./DB";
 import { config } from "../configs/config";
+import dataSource from "./DB";
 import { Event } from "./models/Event";
-import { Log } from "./models/Log";
 import { Job } from "./models/Job";
+import { Log } from "./models/Log";
 
+/**
+ * This class abstracts away the "emission" of events/signals relating to job statuses via mutations to the database. 
+ */
 class Emitter {
-  private db = new DB();
-
+  /**
+   * This function processes a event of a given type for a given job. A message is also associated with the event.
+   *
+   * @param {Job} job the job the event pertains to
+   * @param {string} type the type of the event -- JOB_INIT | JOB_ENDED | JOB_FAILED
+   * @param {string} message message associated with the event
+   */
   async registerEvents(job: Job, type: string, message: string) {
     if (config.is_testing) console.log(`${job.id}: [event]`, type, message);
-    var connection = await this.db.connect();
-    var eventRepo = connection.getRepository(Event);
-    var jobId = job.id;
+
+    const eventRepo = dataSource.getRepository(Event);
+    const jobId = job.id;
 
     if (type === "JOB_INIT") {
       job.initializedAt = new Date();
-      await connection
+      await dataSource
         .createQueryBuilder()
         .update(Job)
         .where("id = :id", { id: job.id })
         .set({ initializedAt: job.initializedAt })
         .execute();
-    } else if (type == "JOB_ENDED" || type === "JOB_FAILED") {
+    } else if (type === "JOB_ENDED" || type === "JOB_FAILED") {
       job.finishedAt = new Date();
       job.isFailed = type === "JOB_FAILED";
-      await connection
+      await dataSource
         .createQueryBuilder()
         .update(Job)
         .where("id = :id", { id: job.id })
@@ -32,7 +40,7 @@ class Emitter {
         .execute();
     }
 
-    var event: Event = new Event();
+    const event: Event = new Event();
     event.jobId = jobId;
     event.type = type;
     event.message = message;
@@ -41,12 +49,18 @@ class Emitter {
     } catch {}
   }
 
+  /**
+   * Handles any logs that are made during execution. 
+   * 
+   * @param job job the log pertains to
+   * @param message content of the log
+   */
   async registerLogs(job: Job, message: string) {
     if (config.is_testing) console.log(`${job.id}: [log]`, message);
-    var connection = await this.db.connect();
-    var logRepo = connection.getRepository(Log);
 
-    var log: Log = new Log();
+    const logRepo = dataSource.getRepository(Log);
+
+    const log: Log = new Log();
     log.jobId = job.id;
     log.message =
       message.length > 500
@@ -57,18 +71,28 @@ class Emitter {
     } catch {}
   }
 
+  /**
+   * Gets all events associated with a given job ordered in reverse chronological order of creation. 
+   * 
+   * @param {string} jobId id of job to request
+   * @returns {Promise{Event[]}} list of events
+    */
   async getEvents(jobId: string): Promise<Event[]> {
-    var connection = await this.db.connect();
-    return await connection
+    return await dataSource
       .createQueryBuilder(Event, "event")
       .where("event.jobId = :jobId", { jobId: jobId })
       .orderBy("event.createdAt", "DESC")
       .getMany();
   }
 
+  /**
+   * Gets all logs associated with a given job in reverse chronological order of creation. 
+   *
+   * @param {string} jobId id of job to request
+   * @return {Promise<Log[]>} list of logs
+   */
   async getLogs(jobId: string): Promise<Log[]> {
-    var connection = await this.db.connect();
-    return await connection
+    return await dataSource
       .createQueryBuilder(Log, "log")
       .where("log.jobId = :jobId", { jobId: jobId })
       .orderBy("log.createdAt", "DESC")
