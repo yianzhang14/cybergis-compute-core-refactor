@@ -3,16 +3,9 @@ import {
   DataSource,
 } from "typeorm";
 import { config } from "../configs/config";
-import { Event } from "../src/models/Event";
-import { Job } from "../src/models/Job";
-import { Log } from "../src/models/Log";
 import * as Helper from "./lib/Helper"; 
-import { Cache } from "./models/Cache";
-import { Folder } from "./models/Folder";
-import { Git } from "./models/Git";
-import { GlobusTransferRefreshToken } from "./models/GlobusTransferRefreshToken";
 
-const entities = [Event, Log, Job, Git, GlobusTransferRefreshToken, Folder, Cache, "production/src/models/**/*.js"];
+const entities = [__dirname + "/models/**/*.js"];
 
 let dbConfig: DataSourceOptions = {
   name: "default",
@@ -26,15 +19,15 @@ let dbConfig: DataSourceOptions = {
   logging: false,
   migrationsRun: true,
   entities: entities,
-  cache: {
-    type: "redis",
-    options: {
-      host: config.redis.host,
-      port: config.redis.port,
-      // TODO: add password support
-    },
-    ignoreErrors: true,
-  },
+  // cache: {
+  //   type: "redis",
+  //   options: {
+  //     host: config.redis.host,
+  //     port: config.redis.port,
+  //     // TODO: add password support
+  //   },
+  //   ignoreErrors: true,
+  // },
 };
 
 if (config.is_jest) {
