@@ -2,7 +2,7 @@ import { containerConfigMap, hpcConfigMap, kernelConfigMap } from "@configs/conf
 
 import * as path from "path";
 
-import * as Helper from "../shared/Helper";
+import * as Helper from "../helpers/Helper";
 import { slurm, executableManifest } from "../utils/types";
 
 import SlurmConnector from "./SlurmConnector";

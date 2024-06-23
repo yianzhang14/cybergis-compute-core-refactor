@@ -3,7 +3,7 @@ import axios from "axios";
 
 import * as path from "path";
 
-import * as Helper from "../shared/Helper";
+import * as Helper from "../helpers/Helper";
 
 declare interface decodedToken {
   host: string;

@@ -3,8 +3,8 @@ import express = require("express");
 
 import * as fs from "fs";
 
+import * as Helper from "../helpers/Helper";
 import { Job } from "../models/Job";
-import * as Helper from "../shared/Helper";
 import dataSource from "../utils/DB";
 import { hpcConfig, maintainerConfig, containerConfig, jupyterGlobusMapConfig, announcementsConfig } from "../utils/types";
 

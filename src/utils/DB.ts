@@ -4,7 +4,7 @@ import {
   DataSource,
 } from "typeorm";
 
-import * as Helper from "../shared/Helper"; 
+import * as Helper from "../helpers/Helper"; 
 
 const entities = [__dirname + "../models/**/*.js"];
 

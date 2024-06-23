@@ -5,10 +5,10 @@ import express = require("express");
 
 import * as path from "path";
 
+import GlobusUtil from "../helpers/GlobusUtil";
+import * as Helper from "../helpers/Helper";
+import JobUtil from "../helpers/JobUtil";
 import { Job } from "../models/Job";
-import GlobusUtil from "../shared/GlobusUtil";
-import * as Helper from "../shared/Helper";
-import JobUtil from "../shared/JobUtil";
 import dataSource from "../utils/DB";
 
 import { authMiddleWare } from "./ServerUtil";

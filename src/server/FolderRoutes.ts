@@ -5,9 +5,9 @@ import express = require("express");
 
 import * as path from "path";
 
+import GlobusUtil from "../helpers/GlobusUtil";
+import * as Helper from "../helpers/Helper";
 import { Folder } from "../models/Folder";
-import GlobusUtil from "../shared/GlobusUtil";
-import * as Helper from "../shared/Helper";
 import dataSource from "../utils/DB";
 import type {
   updateFolderBody,

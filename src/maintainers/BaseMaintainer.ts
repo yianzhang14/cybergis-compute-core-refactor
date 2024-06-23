@@ -8,8 +8,8 @@ import validator from "validator";
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";
+import * as Helper from "../helpers/Helper";
 import { Job } from "../models/Job";
-import * as Helper from "../shared/Helper";
 import dataSource from "../utils/DB";
 // import Supervisor from "../Supervisor";
 import {

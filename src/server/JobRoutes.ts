@@ -4,9 +4,9 @@ import {
 } from "@configs/config";
 import express = require("express");
 
+import * as Helper from "../helpers/Helper";
+import JobUtil from "../helpers/JobUtil";
 import { Job } from "../models/Job";
-import * as Helper from "../shared/Helper";
-import JobUtil from "../shared/JobUtil";
 import dataSource from "../utils/DB";
 import type {
   createJobBody,

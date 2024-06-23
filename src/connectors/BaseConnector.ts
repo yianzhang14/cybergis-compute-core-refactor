@@ -3,9 +3,9 @@ import { config, hpcConfigMap } from "@configs/config";
 import { existsSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
 
+import FileUtil from "../helpers/FolderUtil";  // shouldn't this be registerUtil?
+import * as Helper from "../helpers/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
-import FileUtil from "../shared/FolderUtil";  // shouldn't this be registerUtil?
-import * as Helper from "../shared/Helper";
 import { ConnectorError } from "../utils/errors";
 import { options, hpcConfig, SSH, callableFunction } from "../utils/types";
 

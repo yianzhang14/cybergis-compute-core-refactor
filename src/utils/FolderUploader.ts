@@ -6,12 +6,12 @@ import * as path from "path";
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";
+import FolderUtil from "../helpers/FolderUtil";
+import GitUtil from "../helpers/GitUtil";
+import GlobusUtil from "../helpers/GlobusUtil";
+import * as Helper from "../helpers/Helper";
 import { Cache } from "../models/Cache";
 import { Folder } from "../models/Folder";
-import FolderUtil from "../shared/FolderUtil";
-import GitUtil from "../shared/GitUtil";
-import GlobusUtil from "../shared/GlobusUtil";
-import * as Helper from "../shared/Helper";
 
 import dataSource from "./DB";
 import { NotImplementedError } from "./errors";
