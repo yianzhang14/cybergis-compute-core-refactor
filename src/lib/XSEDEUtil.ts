@@ -69,7 +69,7 @@ export default class XSEDEUtil {
    * @param{float} b - time input 2
    * @return{float} - time difference in seconds
    */
-  static diffInSeconds(a, b) {
+  static diffInSeconds(a: number, b: number) {
     return Math.abs(a - b) / 1000;
   }
 }

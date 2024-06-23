@@ -20,9 +20,9 @@ class JupyterHub {
    *
    * @param {string} token the token for authorization to the jupterHub host
    * @throws {Error} jupyterhubHost must be in whitelist
-   * @return {Promise<string | undefined>} username
+   * @return {Promise<string | null>} username
    */
-  public async getUsername(token: string): Promise<string | undefined> {
+  public async getUsername(token: string): Promise<string | null> {
     const t = this._decodeToken(token);
     const protocols = ["https", "http"];
     const hosts = Object.keys(
@@ -43,7 +43,7 @@ class JupyterHub {
       throw new Error("Cannot find jupyterhubHost in whitelist");
     }
 
-    let user: string | undefined = undefined;
+    let user: string | null = null;
     for (const protocol of protocols) {
       try {
         const res = await axios.get(

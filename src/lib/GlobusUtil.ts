@@ -1,110 +1,15 @@
-import redis = require("redis");
-import { promisify } from "util";
 import { config } from "../../configs/config";
-import DB from "../DB";
+import dataSource from "../DB";
 import { GlobusTransferRefreshToken } from 
   "../models/GlobusTransferRefreshToken";
-import { GlobusFolder, 
-  hpcConfig, 
-  GetValueFunction, 
-  SetValueFunction,
-  DelValueFunction } from "../types";
+import { GlobusFolder, hpcConfig } from "../types";
 import * as Helper from "./Helper";
 import PythonUtil from "./PythonUtil";
-
-/**
- * Class for managing globus tasks, TODO: port the python scripts to the JS Globus SDK (https://www.globus.org/blog/globus-javascript-sdk-now-available)
- */
-export class GlobusTaskListManager {
-
-  private redis = {
-    getValue: null as null | GetValueFunction,
-    setValue: null as null | SetValueFunction,
-    delValue: null as null | DelValueFunction,
-  };
-
-  private isConnected = false;
-
-  /**
-   * Assigns label to taskId
-   *
-   * @param {string} label - input label
-   * @param {string} taskId - setValue id
-   */
-  async put(label: string, taskId: string) {
-    await this.connect();
-    await this.redis.setValue!(`globus_task_${label}`, taskId);
-  }
-
-  /**
-   * Get taskId for specified label
-   *
-   * @param {string} label - input label
-   * @return {Promise<string>} out - redis output
-   */
-  async get(label: string): Promise<string | null> {
-    await this.connect();
-    const out = await this.redis.getValue!(`globus_task_${label}`);
-    return out ? out : null;
-  }
-
-  /**
-   * removes taskId for specified label
-   *
-   * @param {string} label - input label
-   */
-  async remove(label: string) {
-    await this.connect();
-    const out = await this.get(label);
-    if (!out) return;
-    await this.redis.delValue!(`globus_task_${label}`);
-  }
-
-  /**
-   * @async
-   * Connect to globus through redis
-   */
-  private async connect() {
-    if (this.isConnected) return;
-
-    // TODO: rework this redis code to be less hacky
-    /* eslint-disable 
-      @typescript-eslint/no-unsafe-assignment, 
-      @typescript-eslint/no-unsafe-argument, 
-      @typescript-eslint/no-unsafe-member-access, 
-      @typescript-eslint/no-unsafe-call 
-    */
-
-    const client = new redis.createClient({
-      host: config.redis.host,
-      port: config.redis.port,
-    });
-
-    if (config.redis.password !== null && config.redis.password !== undefined) {
-      const redisAuth = promisify(client.auth).bind(client);
-      await redisAuth(config.redis.password);
-    }
-
-    this.redis.getValue = promisify(client.get).bind(client);
-    this.redis.setValue = promisify(client.set).bind(client);
-    this.redis.delValue = promisify(client.del).bind(client);
-    this.isConnected = true;
-
-    /* eslint-disable 
-      @typescript-eslint/no-unsafe-assignment, 
-      @typescript-eslint/no-unsafe-argument, 
-      @typescript-eslint/no-unsafe-member-access, 
-      @typescript-eslint/no-unsafe-call 
-    */
-  }
-}
 
 export default class GlobusUtil {
   /**
    * Class for accessing Globus commands
    */
-
-  static db = new DB();
 
   /**
    * Initializes globus job
@@ -124,15 +29,14 @@ export default class GlobusUtil {
     hpcConfig: hpcConfig,
     label = ""
   ): Promise<string> {
-    const connection = await this.db.connect();
-    const globusTransferRefreshTokenRepo = connection.getRepository(
+    const globusTransferRefreshTokenRepo = dataSource.getRepository(
       GlobusTransferRefreshToken
     );
 
     Helper.nullGuard(hpcConfig.globus);
-    const g = await globusTransferRefreshTokenRepo.findOne(
-      hpcConfig.globus.identity
-    );
+    const g = await globusTransferRefreshTokenRepo.findOneBy({
+      identity: hpcConfig.globus.identity
+    });
 
     let out: Record<string, unknown>;
     try {
@@ -152,7 +56,7 @@ export default class GlobusUtil {
         ["task_id"]
       );
     } catch (e) {
-      throw new Error(`Globus query status failed with error: ${e}`);
+      throw new Error(`Globus query status failed with error: ${Helper.assertError(e).toString()}`);
     }
 
     Helper.nullGuard(out.task_id);
@@ -209,7 +113,7 @@ export default class GlobusUtil {
         ["mapped_username"]
       );
     } catch (e) {
-      throw new Error(`Jupyter-Globus mapping failed with error: ${e}`);
+      throw new Error(`Jupyter-Globus mapping failed with error: ${Helper.assertError(e).toString()}`);
     }
 
     return username.mapped_username as string;
@@ -229,13 +133,12 @@ export default class GlobusUtil {
     hpcConfig: hpcConfig,
     script: string
   ): Promise<string> {
-    const connection = await this.db.connect();
-    const globusTransferRefreshTokenRepo = connection.getRepository(
+    const globusTransferRefreshTokenRepo = dataSource.getRepository(
       GlobusTransferRefreshToken
     );
-    const g = await globusTransferRefreshTokenRepo.findOne(
-      hpcConfig.globus?.identity
-    );
+    const g = await globusTransferRefreshTokenRepo.findOneBy({
+      identity: hpcConfig.globus?.identity
+    });
 
     let out: Record<string, unknown>;
     try {
@@ -247,7 +150,7 @@ export default class GlobusUtil {
         ["status"]
       );
     } catch (e) {
-      throw new Error(`Globus query status failed with error: ${e}`);
+      throw new Error(`Globus query status failed with error: ${Helper.assertError(e).toString()}`);
     }
 
     return out.status as string;

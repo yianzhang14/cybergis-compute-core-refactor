@@ -1,5 +1,5 @@
 import * as path from "path";
-import { containerConfigMap, hpcConfigMap, kernelConfigMap} from "../../configs/config";
+import { containerConfigMap, hpcConfigMap, kernelConfigMap } from "../../configs/config";
 import * as Helper from "../lib/Helper";
 import { slurm, executableManifest } from "../types";
 import SlurmConnector from "./SlurmConnector";
@@ -249,16 +249,16 @@ class SingularityConnector extends SlurmConnector {
     };
 
     const jobENV: string[] = [];
-    for (const key in jobJSON) {
-      const structuredKeys = ["param", "env"];
-
+    const structuredKeys = ["param", "env"];
+    for (const key of Object.keys(jobJSON)) {
       if (structuredKeys.includes(key)) {
-        for (const i in jobJSON[key]) {
-          jobENV.push(`${key}_${i}="${(jobJSON[key] as Record<string, string>)[i]}"`);
+        for (const i in (
+          jobJSON[key as keyof typeof jobJSON]) as Record<string, string>
+        ) {
+          jobENV.push(`${key}_${i}="${(jobJSON[key as keyof typeof jobJSON] as Record<string, string>)[i]}"`);
         }
-
       } else {
-        jobENV.push(`${key}="${jobJSON[key]}"`);
+        jobENV.push(`${key}="${(jobJSON[key as keyof typeof jobJSON] as string | null | undefined) ?? ""}"`);
       }
     }
 

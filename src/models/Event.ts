@@ -13,19 +13,19 @@ import { Job } from "./Job";
 @Entity({ name: "events" })
 export class Event {
   @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
   @Column()
-    jobId: string;
+    jobId!: string;
 
   @Column()
-    type: string;
+    type!: string;
 
   @Column("text")
-    message: string;
+    message!: string;
 
   @ManyToOne((_type) => Job, (job: Job) => job.events)
-    job: Job;
+    job!: Job;
 
   @Column({
     type: "bigint",
@@ -38,7 +38,7 @@ export class Event {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    createdAt: Date;
+    createdAt!: Date;
 
   @Column({
     type: "bigint",
@@ -52,7 +52,7 @@ export class Event {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    updatedAt: Date;
+    updatedAt?: Date;
 
   @DeleteDateColumn({
     type: "bigint",
@@ -66,7 +66,7 @@ export class Event {
       ): Date | null => (i ? new Date(Math.trunc(i)) : null),
     },
   })
-    deletedAt: Date;
+    deletedAt?: Date;
 
   /**
    * Set the createdAt time to the current time.

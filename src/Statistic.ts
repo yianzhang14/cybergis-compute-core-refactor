@@ -1,12 +1,10 @@
-import DB from "./DB";
+import dataSource from "./DB";
 import { Job } from "./models/Job";
 
 /**
  * Wrapper class for requesting statistics from the database.
  */
 export default class Statistic {
-
-  private db = new DB();
 
   /**
    * Returns the runtime of a job given its jobId.
@@ -15,8 +13,7 @@ export default class Statistic {
    * @return {*} runtime of job (initialization time - finish time)
    */
   public async getRuntimeByJobId(jobId: string): Promise<number | undefined> {
-    const connection = await this.db.connect();
-    const statistic: number | undefined = await connection
+    const statistic: number | undefined = await dataSource
       .getRepository(Job)
       .createQueryBuilder("job")
       .select(
@@ -37,11 +34,9 @@ export default class Statistic {
    * @return {{ [key: string]: number } | null} dictionary of results, including total and statistics by HPC
    */
   public async getRuntimeTotal(): Promise<Record<string, number> | null> {
-    const connection = await this.db.connect();
-
     type totalStatistics = null | { STATISTIC: string } | undefined 
     const statisticTotal: totalStatistics = await (
-      connection
+      dataSource
         .getRepository(Job)
         .createQueryBuilder("job")
         .select("SUM(ABS(job.initializedAt - job.finishedAt)) as STATISTIC")
@@ -51,7 +46,7 @@ export default class Statistic {
 
     type hpcStatistics = { STATISTIC: string, HPC: string }[] | null | undefined
     const statisticByHPC: hpcStatistics = await (
-      connection
+      dataSource
         .getRepository(Job)
         .createQueryBuilder("job")
         .select(
@@ -63,7 +58,7 @@ export default class Statistic {
     );
 
     if (statisticTotal && statisticByHPC) {
-      const out = {
+      const out: Record<string, number> = {
         total: parseInt(statisticTotal.STATISTIC),
       };
 

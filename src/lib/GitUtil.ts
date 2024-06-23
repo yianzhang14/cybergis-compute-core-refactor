@@ -1,15 +1,16 @@
 import { clone, pull, fetch, checkout, log } from "isomorphic-git";
 import http from "isomorphic-git/http/node";
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 import { config } from "../../configs/config";
-import DB from "../DB";
+import dataSource from "../DB";
 import { Git } from "../models/Git";
 import {
   executableManifest,
   integerRule,
+  slurmInputRules,
   slurm_configs,
   slurm_integer_configs,
   slurm_integer_none_unit_config,
@@ -27,6 +28,7 @@ const exec: Function = promisify(require("child_process").exec); // eslint-disab
  */
 export default class GitUtil {
 
+  static cache: Record<string, executableManifest> = {};
 
   /**
    * Gets the local path of a given git repository. 
@@ -40,74 +42,35 @@ export default class GitUtil {
   }
 
   /**
-   * Gets the local manifest path of a given git repository. 
-   *
-   * @static
-   * @param {string} gitId
-   * @return {string} resulting path 
-   */
-  static getLocalManifestPath(gitId: string): string {
-    return path.join(config.local_file_system.root_path, "manifests", gitId);
-  }
-
-  /**
    * Deletes a specified git repository and pulls it again.
    *
    * @static
    * @param {Git} git
    */
-  static async deleteAndPull(git: Git) {
+  protected static async deleteAndPull(git: Git) {
     const localPath = this.getLocalPath(git.id);
-    // eslint-disable-next-line
+
     rimraf.sync(localPath);  // deletes everything
 
     await fs.promises.mkdir(localPath);
-    clone({
+    await clone({
       fs: fs.promises, 
       http,
       dir: localPath,
       url: git.address
-    })
-      .catch((err) => {console.error(err);});
+    });
 
     if (git.sha) {
       // if a sha is specified, checkout that commit
-      checkout({
+      await checkout({
         fs: fs.promises,
         dir: localPath,
         ref: git.sha
-      })
-        .catch((err) => {console.error(err);});
+      });
     }
   }
 
-  /**
-   * Deletes a specified manifest of a git repository and pulls it again.
-   *
-   * @static
-   * @param {Git} git
-   */
-  static async deleteAndPullManifest(git: Git) {
-    const localPath = this.getLocalManifestPath(git.id);
-    // eslint-disable-next-line
-    rimraf.sync(localPath);  // deletes everything
-
-    const getManifestUrl = (
-      (commit: string) => 
-        `${git.address.replace(".git", "").replace("github.com", "raw.githubusercontent.com")}/${commit}/manifest.json`
-    );
-
-    await fs.promises.mkdir(localPath, { recursive: true });
-    
-    if (git.sha) {
-      // if a sha is specified, checkout that commit
-      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(git.sha)}`);
-    } else {
-      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(await this.getDefaultBranch(git))}`);
-    }
-  }
-
-  static async getDefaultBranch(git: Git): Promise<string> {
+  protected static async getDefaultBranch(git: Git): Promise<string> {
     const remote = await fetch({
       fs,
       http,
@@ -125,12 +88,22 @@ export default class GitUtil {
 
     return branch_sections[branch_sections.length - 1];
   }
+
+  public static async getLastCommitTime(git: Git): Promise<number> {
+    await this.refreshGit(git);
+    
+    const localPath = this.getLocalPath(git.id);
+
+    const local = await log({
+      fs,
+      dir: localPath,
+      depth: 1
+    });
+
+    return local[0].commit.committer.timestamp;
+  }
   
-  static async outOfDate(git: Git): Promise<boolean> {
-    // if the commit is specified, we cannot be out of date
-    if (git.sha) {
-      return false;
-    }
+  protected static async outOfDate(git: Git): Promise<boolean> {
 
     const localPath = this.getLocalPath(git.id);
 
@@ -141,10 +114,14 @@ export default class GitUtil {
       dir: localPath,
       url: git.address
     });
-    const remoteSha = remote.fetchHead;
+    let remoteSha = remote.fetchHead;
 
     if (remoteSha === null) {
       return true;
+    }
+
+    if (git.sha) {
+      remoteSha = git.sha;
     }
 
     const local = await log({
@@ -155,7 +132,7 @@ export default class GitUtil {
 
     const localSha = local[0].oid;
 
-    return remoteSha !== localSha;
+    return (git.sha && localSha == git.sha) || remoteSha !== localSha;
   }
   
   /**
@@ -164,124 +141,53 @@ export default class GitUtil {
    * @static
    * @param {Git} git git object
    */
-  static async refreshGit(git: Git) {
+  protected static async refreshGit(git: Git): Promise<boolean> {
     const localPath = this.getLocalPath(git.id);
     await FolderUtil.removeZip(localPath);
     
     // clone if git repo not exits locally
     if (!fs.existsSync(localPath)) {
-      await fs.promises.mkdir(localPath);
-      clone({
-        fs: fs.promises, 
-        http,
-        dir: localPath,
-        url: git.address
-      }).catch((err) => {console.error(err);});
+      await this.deleteAndPull(git);
+      return true;
     }
 
-    //check when last updated
-    let now = new Date();
-    // set to a large number so that we update if the check fails
-    let secsSinceUpdate = 1000000;
-    try {
-      // check when last updated if you can. If updatedAt is null this throws error
-      secsSinceUpdate = (now.getTime() - git.updatedAt.getTime()) / 1000.0;
-    } catch {}
-    
-    if (secsSinceUpdate > 120) {
+    if (await this.outOfDate(git)) {
       console.log(`${git.id} is stale, let's update...`);
       // update git repo before upload
       try {
         // try checking out the sha or pulling latest
         if (git.sha) {
-          checkout({
+          await checkout({
             fs: fs.promises,
             dir: localPath,
             ref: git.sha
-          }).catch((err) => {console.error(err);});
+          });
         } else {
-          pull({
+          await pull({
             fs: fs.promises, 
             http,
             dir: localPath
-          }).catch(err => {console.error(err);});
+          });
         }
       } catch {
         // if there is an error, delete and repull
         await this.deleteAndPull(git);
       }
+
       // call to update the updatedAt timestamp
-      now = new Date();
-      const db = new DB(false);
-      const connection = await db.connect();
-      await connection
+      const now = new Date();
+
+      await dataSource
         .createQueryBuilder()
         .update(Git)
         .where("id = :id", { id: git.id })
-        .set({"updatedAt" : now})
+        .set({ "updatedAt" : now })
         .execute();
-    }
-    else {
-      console.log(`${git.id} last updated ${secsSinceUpdate}s ago, skipping update`);
-    }
-  }
 
-  /**
-   * Repulls only the repository of a git repo if it is out of date and records it in git database.
-   *
-   * @static
-   * @param {Git} git
-   */
-  static async refreshGitManifest(git: Git) {
-    const localPath = this.getLocalManifestPath(git.id);
-    const getManifestUrl = (
-      (commit: string) => 
-        `${git.address.replace(".git", "").replace("github.com", "raw.githubusercontent.com")}/${commit}/manifest.json`
-    );
-    
-    // get the manifest if it does not exist locally
-    if (!fs.existsSync(localPath)) {
-      await fs.promises.mkdir(localPath, { recursive: true });
-      // TODO: either get the branch/the sha of the thing we want
-      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl("main")}`);
-    }
-
-    //check when last updated
-    let now = new Date();
-    // set to a large number so that we update if the check fails
-    let secsSinceUpdate = 1000000;
-    try {
-      // check when last updated if you can. If updatedAt is null this throws error
-      secsSinceUpdate = (now.getTime() - git.updatedAt.getTime()) / 1000.0;
-    } catch {}
-
-    if (secsSinceUpdate > 120) {
-      console.log(`${git.id} is stale, let's update...`);
-      // update git repo before upload
-      try {
-        // try checking out the sha or pulling latest
-        if (git.sha) {
-          await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(git.sha)}`);
-        } else {
-          await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl("main")}`);
-        }
-      } catch {
-        // if there is an error, delete and repull
-        await this.deleteAndPullManifest(git);
-      }
-      // call to update the updatedAt timestamp
-      now = new Date();
-      const db = new DB(false);
-      const connection = await db.connect();
-      await connection
-        .createQueryBuilder()
-        .update(Git)
-        .where("id = :id", { id: git.id })
-        .set({"updatedAt" : now})
-        .execute();
-    }
-    else {
-      console.log(`${git.id} last updated ${secsSinceUpdate}s ago, skipping update`);
+      return true;
+    } else {
+      console.log(`${git.id} not out of date, skipping update`);
+      return false;
     }
   }
 
@@ -293,9 +199,15 @@ export default class GitUtil {
    * @param {Git} git git object to get the manifest 
    * @return {executableManifest} the cleaned manifest 
    */
-  static async getExecutableManifest(git: Git): Promise<executableManifest> {
+  public static async getExecutableManifest(git: Git): Promise<executableManifest> {
     const localPath = this.getLocalPath(git.id);
     const executableFolderPath = path.join(localPath, "manifest.json");
+
+    const refreshed: boolean = await this.refreshGit(git);
+
+    if (!refreshed && git.id in GitUtil.cache) {
+      return GitUtil.cache[git.id];
+    } 
 
     let rawExecutableManifest: string;
     try {
@@ -304,14 +216,17 @@ export default class GitUtil {
       ).toString();
     } catch (e) {
       // delete, repull, and then read
-      console.log(`Encountered error with manifest: ${e}.\nDeleting and repulling`);
+      console.log("Encountered error with manifest", e, ".\nDeleting and repulling");
       await this.deleteAndPull(git);
       rawExecutableManifest = (
         await fs.promises.readFile(executableFolderPath)
       ).toString();
     }
 
-    return this.processExecutableManifest(rawExecutableManifest, git.address);
+    const result = this.processExecutableManifest(rawExecutableManifest, git.address);
+    GitUtil.cache[git.id] = result;
+
+    return result;
   }
 
   /**
@@ -322,7 +237,7 @@ export default class GitUtil {
    * @param {string} address git address
    * @return {executableManifest} cleaned manifest
    */
-  static processExecutableManifest(
+  protected static processExecutableManifest(
     rawExecutableManifest: string,
     address: string
   ) : executableManifest {
@@ -354,35 +269,42 @@ export default class GitUtil {
       
       // remove invalid configs
       if (!slurm_configs.includes(rule_name)) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[
+          rule_name as keyof slurmInputRules
+        ];
         continue;
       }
 
       // pass by reference
-      const rule = (executableManifest
-        .slurm_input_rules[rule_name] 
-      ) as integerRule | stringOptionRule;
+      const rule = executableManifest
+        .slurm_input_rules[rule_name as keyof slurmInputRules];
+
+      if (rule === undefined) {
+        continue;
+      }
 
       if (!rule.default_value) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[
+          rule_name as keyof slurmInputRules
+        ];
         continue;
       }
 
       if (
         slurm_integer_time_unit_config.includes(rule_name) &&
         (rule as integerRule).unit !== undefined &&
-        !["Minutes", "Hours", "Days"].includes((rule as integerRule).unit!)
+        !["Minutes", "Hours", "Days"].includes((rule as integerRule).unit)
       ) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[rule_name as keyof slurmInputRules];
         continue;
       }
 
       if (
         slurm_integer_storage_unit_config.includes(rule_name) &&
         (rule as integerRule).unit !== undefined &&
-        !["GB", "MB"].includes((rule as integerRule).unit!)
+        !["GB", "MB"].includes((rule as integerRule).unit)
       ) {
-        delete executableManifest.slurm_input_rules[rule_name];
+        delete executableManifest.slurm_input_rules[rule_name as keyof slurmInputRules];
         continue;
       }
 
@@ -475,6 +397,118 @@ export default class GitUtil {
     return executableManifest;
   }
 
+  public static async findGit(gitId: string): Promise<Git | null> {
+    const gitRepo = dataSource.getRepository(Git);
+
+    const foundGit = await gitRepo.findOneBy({ id :gitId });
+
+    return foundGit;
+  }
+
+}
+
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+class ManifestUtil extends GitUtil {
+  
+  /**
+   * Deletes a specified manifest of a git repository and pulls it again.
+   *
+   * @static
+   * @param {Git} git
+   */
+  protected static async deleteAndPullManifest(git: Git) {
+    const localPath = this.getLocalManifestPath(git.id);
+    // eslint-disable-next-line
+    rimraf.sync(localPath);  // deletes everything
+
+    const getManifestUrl = (
+      (commit: string) => 
+        `${git.address.replace(".git", "").replace("github.com", "raw.githubusercontent.com")}/${commit}/manifest.json`
+    );
+
+    await fs.promises.mkdir(localPath, { recursive: true });
+    
+    if (git.sha) {
+      // if a sha is specified, checkout that commit
+      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(git.sha)}`);
+    } else {
+      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(await this.getDefaultBranch(git))}`);
+    }
+  }
+
+  
+  /**
+   * Gets the local manifest path of a given git repository. 
+   *
+   * @static
+   * @param {string} gitId
+   * @return {string} resulting path 
+   */
+  protected static getLocalManifestPath(gitId: string): string {
+    return path.join(config.local_file_system.root_path, "manifests", gitId);
+  }
+
+  
+  /**
+   * Repulls only the repository of a git repo if it is out of date and records it in git database.
+   *
+   * @static
+   * @param {Git} git
+   */
+  protected static async refreshGitManifest(git: Git) {
+    const localPath = this.getLocalManifestPath(git.id);
+    const getManifestUrl = (
+      (commit: string) => 
+        `${git.address.replace(".git", "").replace("github.com", "raw.githubusercontent.com")}/${commit}/manifest.json`
+    );
+    
+    // get the manifest if it does not exist locally
+    if (!fs.existsSync(localPath)) {
+      await fs.promises.mkdir(localPath, { recursive: true });
+      // TODO: either get the branch/the sha of the thing we want
+      await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl("main")}`);
+    }
+
+    //check when last updated
+    let now = new Date();
+    // set to a large number so that we update if the check fails
+    let secsSinceUpdate = 1000000;
+    try {
+      // check when last updated if you can. If updatedAt is null this throws error
+      secsSinceUpdate = (
+        now.getTime() - (git.updatedAt !== undefined ? git.updatedAt.getTime() : -999999)
+      ) / 1000.0;
+    } catch {}
+
+    if (secsSinceUpdate > 120) {
+      console.log(`${git.id} is stale, let's update...`);
+      // update git repo before upload
+      try {
+        // try checking out the sha or pulling latest
+        if (git.sha) {
+          await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl(git.sha)}`);
+        } else {
+          await exec(`cd ${localPath} && wget -O manifest.json ${getManifestUrl("main")}`);
+        }
+      } catch {
+        // if there is an error, delete and repull
+        await this.deleteAndPullManifest(git);
+      }
+      // call to update the updatedAt timestamp
+      now = new Date();
+      
+      await dataSource
+        .createQueryBuilder()
+        .update(Git)
+        .where("id = :id", { id: git.id })
+        .set({ "updatedAt" : now })
+        .execute();
+    }
+    else {
+      console.log(`${git.id} last updated ${secsSinceUpdate}s ago, skipping update`);
+    }
+  }
+
   /**
    * Does some logic on and returns the manifest json of the executable of a git object. 
    * Uses the manifests/ path to do so. 
@@ -483,9 +517,11 @@ export default class GitUtil {
    * @param {Git} git git object to get the manifest 
    * @return {executableManifest} the cleaned manifest 
    */
-  static async getExecutableManifestSpecialized(
+  static async getExecutableManifest(
     git: Git
   ): Promise<executableManifest> {
+    await this.refreshGitManifest(git);
+
     const localPath = this.getLocalManifestPath(git.id);
     const executableFolderPath = path.join(localPath, "manifest.json");
 
@@ -496,7 +532,7 @@ export default class GitUtil {
       ).toString();
     } catch (e) {
       // delete, repull, and then read
-      console.log(`Encountered error with manifest: ${e}.\nDeleting and repulling`);
+      console.log("Encountered error with manifest: ", e, ".\nDeleting and repulling");
       await this.deleteAndPullManifest(git);
       rawExecutableManifest = (
         await fs.promises.readFile(executableFolderPath)

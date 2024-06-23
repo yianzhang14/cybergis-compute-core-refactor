@@ -2,25 +2,23 @@ import NodeSSH = require("node-ssh");
 import * as events from "events";
 import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
 import connectionPool from "./connectors/ConnectionPool";
-import DB from "./DB";
+import dataSource from "./DB";
 import Emitter from "./Emitter";
 import * as Helper from "./lib/Helper";
 import BaseMaintainer from "./maintainers/BaseMaintainer";
 import { Job } from "./models/Job";
-import Queue from "./Queue";
-import { SSH } from "./types";
+import { JobQueue } from "./Redis";
+import { SSH, callableFunction } from "./types";
 
 /**
  * Manages 
  */
 class Supervisor {
 
-  private db = new DB();  // database reference
-
   // these maps keep track of the various hpcs
   private jobPoolCapacities: Record<string, number> = {};  // capacity
   private jobPoolCounters: Record<string, number> = {};  // current size
-  private queues: Record<string, Queue> = {};  // queues of jobs
+  private queues: Record<string, JobQueue> = {};  // queues of jobs
   private runningJobs: Record<string, Job[]> = {};  // running jobs
   private cancelJobs: Record<string, Job[]> = {};  // what jobs to cancel
 
@@ -44,7 +42,7 @@ class Supervisor {
       // register job pool & queues
       this.jobPoolCapacities[hpcName] = hpcConfig.job_pool_capacity;
       this.jobPoolCounters[hpcName] = 0;
-      this.queues[hpcName] = new Queue(hpcName);
+      this.queues[hpcName] = new JobQueue(hpcName);
       this.runningJobs[hpcName] = new Array<Job>();
       this.cancelJobs[hpcName] = new Array<Job>();
     }
@@ -69,7 +67,7 @@ class Supervisor {
           this.jobPoolCounters[hpcName] < this.jobPoolCapacities[hpcName] &&
           !(await this.queues[hpcName].isEmpty())
         ) {
-          const job = await this.queues[hpcName].shift();
+          const job = await this.queues[hpcName].pop();
           if (!job) continue;
 
           // eslint-disable-next-line
@@ -93,8 +91,8 @@ class Supervisor {
             );
 
             job.finishedAt = new Date();
-            const connection = await this.db.connect();
-            await connection
+
+            await dataSource
               .createQueryBuilder()
               .update(Job)
               .where("id = :id", { id: job.id })
@@ -156,7 +154,7 @@ class Supervisor {
    */
   async createMaintainerWorker(job: Job) {
     Helper.nullGuard(job.maintainerInstance);  // should have been initialized on job creation
-
+    // const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     // keep looping while the job is not finished
     while (true) {  // eslint-disable-line no-constant-condition
       // get ssh connector from pool
@@ -170,22 +168,31 @@ class Supervisor {
         ssh = connectionPool[job.id].ssh;
       }
 
-      // connect ssh & run
-      try {
-        if (!ssh.connection.isConnected())
-          await ssh.connection.connect(ssh.config);
-        await ssh.connection.execCommand("echo"); // test connection
-
-        if (job.maintainerInstance.isInit) {
-          await job.maintainerInstance.maintain();
-        } else {
-          await job.maintainerInstance.init();
+      if (!ssh.connection.isConnected()) {
+        try {
+          // wraps command with backoff -> takes lambda function and array of inputs to execute command
+          await Helper.runCommandWithBackoff((async (ssh1: SSH) => {
+            if (!ssh1.connection.isConnected()) {
+              await ssh1.connection.connect(ssh1.config);
+            }
+            await ssh1.connection.execCommand("echo");
+          }) as callableFunction, [ssh], null);
+        } catch (e) {
+          console.log(`job [${job.id}]: Caught ${Helper.assertError(e).toString()}`);
+          await this.emitter.registerEvents(
+            job,
+            "JOB_FAILED",
+            `job [${job.id}] failed because the HPC could not connect within the allotted time`
+          );
         }
-      } catch (e) {
-        if (config.is_testing) console.error(Helper.assertError(e).stack);
-        continue;
+        
       }
 
+      if (job.maintainerInstance.isInit) {
+        await job.maintainerInstance.maintain();
+      } else {
+        await job.maintainerInstance.init();
+      }
       // emit events & logs
       const events = job.maintainerInstance.dumpEvents();
       const logs = job.maintainerInstance.dumpLogs();
@@ -285,8 +292,6 @@ class Supervisor {
 
     // look for the job across all hpcs
     for (const hpc in hpcConfigMap) {
-      if (config.is_testing) console.log(`looking in ${hpc}`);
-
       // // look for any jobs queued up TODO: fix this
       // for (let i = 0; i < await this.queues[hpc].length(); i++) {
       //   console.log(`Queue: checking is ${this.queues[hpc][i].id.toString()}`);
@@ -297,13 +302,18 @@ class Supervisor {
       // }
 
       // look for the job in the running jobs
-      for (const job of this.runningJobs[hpc]) {
-        console.log(`RunningJobs: checking is ${job.id.toString()}`);
-        if (job.id === jobId.toString()) {
-          toReturn = job;
-          hpcToAdd = hpc;
+      if (config.is_testing) {
+        console.log(`looking in ${hpc}`);
+        
+        for (const job of this.runningJobs[hpc]) {
+          console.log(`RunningJobs: checking is ${job.id.toString()}`);
+          if (job.id === jobId.toString()) {
+            toReturn = job;
+            hpcToAdd = hpc;
+          }
         }
       }
+      
     }
     
     // if found, cancel it; otherwise log it
@@ -318,3 +328,4 @@ class Supervisor {
 }
 
 export default Supervisor;
+

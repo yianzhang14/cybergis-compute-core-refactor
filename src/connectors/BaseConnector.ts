@@ -1,12 +1,11 @@
 import { existsSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
 import { config, hpcConfigMap } from "../../configs/config";
-import DB from "../DB";
 import { ConnectorError } from "../errors";
 import FileUtil from "../lib/FolderUtil";  // shouldn't this be registerUtil?
 import * as Helper from "../lib/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
-import { options, hpcConfig, SSH } from "../types";
+import { options, hpcConfig, SSH, callableFunction } from "../types";
 import connectionPool from "./ConnectionPool";
 
 /**
@@ -27,7 +26,6 @@ class BaseConnector {
 
   /** config **/
   public connectorConfig: hpcConfig;
-  public db = new DB();
   protected envCmd = "#!/bin/bash\n";
 
   constructor(
@@ -185,7 +183,10 @@ class BaseConnector {
         );
       
       // try to get the from file via ssh/scp and remove the compressed folder afterwards
-      await this.ssh().connection.getFile(to, fromZipFilePath);
+      // wraps command with backoff -> takes lambda function and array of inputs to execute command
+      await Helper.runCommandWithBackoff.call(this, (async (to1: string, zipPath: string) => {
+        await this.ssh().connection.getFile(to1, zipPath);
+      }) as callableFunction, [to, fromZipFilePath], "Trying to download file again");
       await this.rm(fromZipFilePath);
 
       // decompress the transferred file into the toZipFilePath directory
@@ -216,7 +217,10 @@ class BaseConnector {
         );
       
       // attempt to send the from file to the to folder
-      await this.ssh().connection.putFile(from, to);
+      // wraps command with backoff -> takes lambda function and array of inputs to execute command
+      await Helper.runCommandWithBackoff.call(this, (async (from1: string, to1: string) => {
+        await this.ssh().connection.putFile(from1, to1);
+      }) as callableFunction, [from, to], "Trying again to transfer file");
     } catch (e) {
       const error =
         `unable to put file from ${from} to ${to}: ` + Helper.assertError(e).toString();
@@ -282,12 +286,12 @@ class BaseConnector {
    * @async
    * Returns the specified path
    *
-   * @param {string} [path=undefined] execution path
+   * @param {string} execution path
    * @param {options} [options={}] dictionary with string options
    * @return {Promise<string>} returns command execution output
    */
   async pwd(
-    path: string | undefined = undefined, 
+    path?: string, 
     options: options = {}
   ): Promise<string | null> {
     let cmd = "pwd;";
@@ -300,12 +304,12 @@ class BaseConnector {
    * @async
    * Returns all of the files/directories in specified path
    *
-   * @param {string} [path=undefined] specified path
+   * @param {string} specified path
    * @param {options} [options={}] dictionary with string options
    * @return {Promise<string | null>} returns command execution output
    */
   async ls(
-    path: string | undefined = undefined, 
+    path?: string, 
     options: options = {}
   ): Promise<string | null> {
     let cmd = "ls;";
@@ -551,7 +555,7 @@ class BaseConnector {
     const localPath : string = path.join(tmp_dir, tmp_file);
 
     // write the content to the tmp file
-    writeFileSync(localPath, contentString, {flag: "w"});
+    writeFileSync(localPath, contentString, { flag: "w" });
 
     // upload the file
     await this.transferFile(localPath, remotePath);

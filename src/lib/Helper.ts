@@ -1,5 +1,6 @@
 import { config, hpcConfigMap, jupyterGlobusMap } from "../../configs/config";
 import { Job } from "../models/Job";
+import { callableFunction } from "../types";
 // import * as fs from "fs";
 
 
@@ -52,36 +53,20 @@ export function job2object(
   }
   
   const out: Record<string, unknown> = {};
-  const include = [
-    "id",
-    "userId",
-    "secretToken",
-    "slurmId",
-    "maintainer",
-    "hpc",
-    "remoteExecutableFolder",
-    "remoteDataFolder",
-    "remoteResultFolder",
-    "localExecutableFolder",
-    "localDataFolder",
-    "param",
-    "env",
-    "slurm",
-    "createdAt",
-    "updatedAt",
-    "deletedAt",
-    "initializedAt",
-    "finishedAt",
-    "isFailed",
-    "events",
-    "logs",
-  ];
+  const include = Object.getOwnPropertyNames(job);
 
   for (const i of include) {
     if (exclude.includes(i)) continue;
-    if (i in job) out[i] = job[i];
+    if (i in job) {
+      // if (job[i as keyof Job] === undefined) {
+      //   out[i] = null;
+      // } else {
+      out[i] = job[i as keyof Job];
+      // }
+    } 
     else out[i] = null;
   }
+  
   return out;
 }
 
@@ -191,4 +176,34 @@ export function nullGuard<T>(x: null | T | undefined): asserts x is T {
     "%o", 
     `Variable is undefined/null when it should not be. Assertion at ${frame[0]}, ${functionName}: ${lineNumber}`
   );
+}
+
+/**
+   *
+   * @param funcCall - The function that is run with backoff
+   * @param parameters - What the function is input as parameters (in the form of one array)
+   * @param printOnError - Printed with error when catch block reached
+   */
+export async function runCommandWithBackoff(
+  funcCall: callableFunction, 
+  parameters: unknown[], 
+  printOnError: string | null
+) {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  let wait = 0;
+  let end = false;
+
+  while (true && !end) {
+    if (wait > 100) {
+      throw new Error("The function was attempted too mant times unsuccessfully");
+    }
+    try {
+      await sleep(wait * 1000);
+      await funcCall(...parameters);
+      end = true;
+    } catch (e) {
+      console.error(printOnError ?? "" + assertError(e).stack);
+    }
+    wait = wait == 0 ? 2 : wait * wait;
+  }
 }

@@ -147,12 +147,12 @@ These classes are found in the `src/lib/` directory, and these generally serve a
 General Improvements
 
 - work out the `folderUtil` vs. `registerUtil` naming discrepancy 
-- update the database to support the new manifest-specific GitUtil things and update everything accordingly
+- ~~update the database to support the new manifest-specific GitUtil things and update everything accordingly~~ (no longer needed)
 - port all the python globus scripts to the javascript globus SDK & delete `PythonUtil`
 - verify `XSEDEUtil` actually does things & is meaningful
-- make a RedisUtil class to encapsulate all of the individual redis interfaces (which are essentially the same with a few naming differences)
-    - make the redis connections less weird
-    - make the redis connection actually persistent and not local
+- ~~make a RedisUtil class to encapsulate all of the individual redis interfaces (which are essentially the same with a few naming differences)~~
+    - ~~make the redis connections less weird~~
+    - ~~make the redis connection actually persistent and not local~~
 - ~~get an actual git sdk to avoid having to exec~~
 - the Helper generateId function has a chance of collisions (expected 1 in every 62 ** 5 for every millisecond)
 - ~~unlink vs rm in FolderUtil.removeZip -- unlink doesn't actually remove but rm does~~ (changed to rm)
@@ -301,9 +301,10 @@ Improvements:
     - rework some of the typings
 - potentially remove some unused classes
 - is there any point in having connectors be passed to it instead of just making a baseconnector
-- think if globus transfers of data should be cached
+- ~~think if globus transfers of data should be cached~~ (no)
 - remove the FolderUploaderHelper -- too generic for its own good
-- make the Folders database be better integrated for cached uploads (just uploads under a cache user right now)
+- ~~make the Folders database be better integrated for cached uploads (just uploads under a cache user right now)~~
+    - cache exists now but still need to integrate with folders to get the remote executable folder and such -- should fully detach at some point
 
 ### JupyterHub
 
@@ -339,7 +340,7 @@ Dependents:
 - `src/Supervisor.ts`: directly uses the job queue to keep track of things to create job maintainers for
 
 Improvements:
-- combine all redis things into one
+- ~~combine all redis things into one~~
 - fix the relatively hacky way of storing functions
 
 ### SSHCredentialGuard
@@ -396,7 +397,7 @@ Dependents:
 - `server.ts`: main supervisor created here, starting the main job loop
 
 Improvements:
-- fix the code for looking inside the redis queue (it curretnly does not work and needs more redis functionality)
+- ~~fix the code for looking inside the redis queue (it curretnly does not work and needs more redis functionality)~~ (not sure what this was referring to)
 - possibly refactor createMaintenanceWorker to not be busy waiting (change it to setInterval?)
 - make supervisor less likely to freak out on an error (infinite loop of prints)--especially assertion errors
 

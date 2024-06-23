@@ -56,7 +56,7 @@ export interface integerRule {
   min?: number;
   step?: number;
   default_value: number;
-  unit?: unit;
+  unit: unit;
 }
 
 export interface stringOptionRule {
@@ -147,7 +147,7 @@ export interface localKey {
 export interface redis {
   host: string;
   port: number;
-  password?: unknown;
+  password?: string;
 }
 
 export interface mysql {
@@ -317,35 +317,31 @@ export interface jobMaintainerUpdatable {
   remoteDataFolder?: Folder;
 }
 
-export interface GlobusFolder {
-  type?: string;
+export interface BaseFolder {
+  type: "globus" | "git" | "local" | "empty";
+}
+
+export interface GlobusFolder extends BaseFolder {
+  type: "globus";
   endpoint: string;
   path: string;
 }
 
-export interface GitFolder {
-  type?: string;
+export interface GitFolder extends BaseFolder {
+  type: "git";
   gitId: string;
 }
 
-export interface LocalFolder {
+export interface LocalFolder extends BaseFolder {
+  type: "local";
   localPath: string;
-  type?: string;
 }
 
 export interface EmptyFolder {
-  type: string;
+  type: "empty"
 }
 
-export interface folderEditable {
-  name: string;
-  isWritable: boolean;
-}
-
-export type NeedUploadFolder = 
-  GlobusFolder | GitFolder | LocalFolder;
-
-export type AnyFolder = NeedUploadFolder | EmptyFolder;
+export type NeedUploadFolder = GlobusFolder | GitFolder | LocalFolder;
 
 export interface authReqBody {
   jupyterhubApiToken: string
@@ -384,22 +380,4 @@ export interface updateJobBody {
   remoteExecutableFolder?: object,
 }
 
-export interface refreshCacheBody {
-  hpc?: string
-}
-
-export type PushFunction = (_args: unknown[]) => Promise<number>;
-export type ShiftFunction = (_key: unknown) => Promise<unknown>;
-export type PeekFunction = (
-  _key: unknown, 
-  _start: number, 
-  _end: number
-) => Promise<unknown>;
-export type LengthFunction = (_key: unknown) => Promise<number>;
-
-export type GetValueFunction = (_key: unknown) => Promise<string>;
-export type SetValueFunction = (
-  _key: unknown, 
-  _value: string
-) => Promise<string>;  // possibly not string
-export type DelValueFunction = (_keys: unknown) => Promise<number>;
+export type callableFunction = (..._args: unknown[]) => unknown;

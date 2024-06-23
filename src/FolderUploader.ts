@@ -4,15 +4,16 @@ import { hpcConfigMap } from "../configs/config";
 import BaseConnector from "./connectors/BaseConnector";
 import SingularityConnector from "./connectors/SingularityConnector";
 import SlurmConnector from "./connectors/SlurmConnector";
-import DB from "./DB";
+import dataSource from "./DB";
+import { NotImplementedError } from "./errors";
 import FolderUtil from "./lib/FolderUtil";
 import GitUtil from "./lib/GitUtil";
 import GlobusUtil from "./lib/GlobusUtil";
 import * as Helper from "./lib/Helper";
+import { Cache } from "./models/Cache";
 import { Folder } from "./models/Folder";
-import { Git } from "./models/Git";
 import {
-  AnyFolder,
+  BaseFolder,
   GitFolder,
   GlobusFolder,
   hpcConfig,
@@ -39,7 +40,6 @@ export abstract class BaseFolderUploader {
   public isComplete: boolean;
   public isFailed: boolean;
 
-  protected db: DB;
   protected connector: Connector;
 
   constructor(hpcName: string, userId: string, connector?: Connector) {
@@ -55,7 +55,6 @@ export abstract class BaseFolderUploader {
 
     this.isComplete = false;
     this.isFailed = false;
-    this.db = new DB();
     this.globusPath = (this.hpcConfig.globus 
       ? path.join(this.hpcConfig.globus.root_path, this.id) 
       : null
@@ -73,17 +72,18 @@ export abstract class BaseFolderUploader {
    * @protected
    */
   protected async register() {
-    const connection = await this.db.connect();
-    const folder = new Folder();
-    folder.id = this.id;
-    folder.hpcPath = this.hpcPath;
-    if (this.globusPath) {
-      folder.globusPath = this.globusPath;
-    }
-    folder.hpc = this.hpcName;
-    folder.userId = this.userId;
+    if (this.isComplete && !this.isFailed) {
+      const folder = new Folder();
+      folder.id = this.id;
+      folder.hpcPath = this.hpcPath;
+      if (this.globusPath) {
+        folder.globusPath = this.globusPath;
+      }
+      folder.hpc = this.hpcName;
+      folder.userId = this.userId;
 
-    await connection.getRepository(Folder).save(folder);
+      await dataSource.getRepository(Folder).save(folder);
+    }
   }
 }
 
@@ -91,7 +91,6 @@ export abstract class BaseFolderUploader {
  * Specialization of BaseFolderUploader for uploading an empty folder.
  */
 export class EmptyFolderUploader extends BaseFolderUploader {
-  protected connector: Connector;  // too communicate iwth HPC
 
   constructor(
     hpcName: string,
@@ -109,8 +108,8 @@ export class EmptyFolderUploader extends BaseFolderUploader {
    */
   public async upload() {
     await this.connector.mkdir(this.hpcPath, {}, true);  // mkdir {name}
-    await this.register();  // register folder in the database
     this.isComplete = true;
+    await this.register();  // register folder in the database
   }
 }
 
@@ -199,7 +198,7 @@ export class EmptyFolderUploader extends BaseFolderUploader {
  * @extends {BaseFolderUploader}
  */
 abstract class CachedFolderUploader extends BaseFolderUploader {
-  protected cacheFile: string;
+  protected cachePath: string;
 
   constructor(
     cacheFile: string,
@@ -208,9 +207,8 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
     connector?: Connector,
   ) {
     super(hpcName, userId, connector);
-    
-    this.cacheFile = `${cacheFile}.zip`;  // always store cached files as a zip file (TODO: figure out if this is the best for globus)
-    
+
+    this.cachePath = path.join(this.hpcConfig.root_path, "cache", `${cacheFile}.zip`);
   }
 
   /**
@@ -226,12 +224,8 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
     }
   }
 
-  protected getCacheFile(): string {
-    return path.join(this.hpcConfig.root_path, "cache", this.cacheFile);
-  }
-
   private async cacheExists(): Promise<boolean> {
-    return this.connector.remoteFsExists(this.getCacheFile());
+    return this.connector.remoteFsExists(this.cachePath);
   }
 
   private async clearCache() {
@@ -239,12 +233,12 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
       return;
     }
 
-    await this.connector.rm(this.getCacheFile());
+    await this.connector.rm(this.cachePath);
   }
 
   private async pullFromCache() {
     // assert cached file exists
-    await this.connector.unzip(this.getCacheFile(), this.hpcPath);
+    await this.connector.unzip(this.cachePath, this.hpcPath);
   }
 
   protected abstract uploadToCache(): Promise<void>;
@@ -260,8 +254,40 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
       await this.refreshCache();
     }
 
-    // await this.register();  // TODO: reenable this and mark it as cached somehow
     await this.pullFromCache();
+  }
+
+  protected async getUpdateTime(): Promise<number> {
+    const exists = await dataSource.getRepository(Cache).findOneBy({
+      hpc: this.hpcName,
+      hpcPath: this.cachePath
+    });
+
+    if (exists === null) {
+      return -1;
+    } else {
+      return exists.updatedAt.getTime();
+    }
+  }
+
+  protected async registerCache() {
+    if (this.isComplete && !this.isFailed) {
+      const exists = await dataSource.getRepository(Cache).findOneBy({
+        hpc: this.hpcName,
+        hpcPath: this.cachePath
+      });
+
+      if (exists === null) {
+        const cache = new Cache();
+        cache.hpc = this.hpcName;
+        cache.hpcPath = this.cachePath;
+      
+        await dataSource.getRepository(Cache).save(cache);
+      } else {
+        exists.update();
+      }
+    }
+    
   }
 }
 
@@ -275,10 +301,8 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
   private from: GlobusFolder;
   private to: GlobusFolder;
 
-  private taskId: string;
+  private taskId!: string;
   private jobId: string;
-
-  public globusPath: string;  // cannot be null here
 
   constructor(
     from: GlobusFolder,
@@ -298,8 +322,9 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
 
     this.from = from;
     this.to = {
+      type: "globus",
       endpoint: this.hpcConfig.globus.endpoint,
-      path: this.globusPath,
+      path: this.globusPath!,  // will not be null for globus folder uploads (probably)
     };
 
     this.jobId = jobId;
@@ -332,13 +357,7 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
 
     if (status.includes("SUCCEEDED")) {
       this.isComplete = true;
-    }
-
-    if (this.isComplete) {
-      if (!this.isFailed) {
-        await this.register();
-      }
-    }
+    }    
   }
 
   /**
@@ -348,23 +367,28 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
   public async upload() {
     // start the transfer
     await this.uploadToFolder(this.to);
+    await this.register();
   }
 
   /**
    * Uploads the specified folder to the cache via globus.
    *
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   protected async uploadToCache(): Promise<void> {
-    Helper.nullGuard(this.hpcConfig.globus);  // know this is defined from the constructor
+    // need some way to detect cache invalidation
+    throw new NotImplementedError("Not implemented");
+    // Helper.nullGuard(this.hpcConfig.globus);  // know this is defined from the constructor
 
-    const uploadPath = this.getCacheFile().slice(0, -3);
-    await this.uploadToFolder({
-      endpoint: this.hpcConfig.globus.endpoint,  
-      path: uploadPath // get rid of the .zip
-    });
+    // const uploadPath = this.cachePath.slice(0, -3);
+    // await this.uploadToFolder({
+    //   endpoint: this.hpcConfig.globus.endpoint,  
+    //   path: uploadPath, // get rid of the .zip
+    //   type: "globus"
+    // });
 
-    await this.connector.zip(uploadPath, this.getCacheFile());
-    await this.connector.rm(uploadPath);
+    // await this.connector.zip(uploadPath, this.cachePath);
+    // await this.connector.rm(uploadPath);
   }
 }
 
@@ -394,7 +418,7 @@ export class LocalFolderUploader extends CachedFolderUploader {
    */
   protected async uploadToPath(path: string) {
     // if path does not exist, throw an error
-    if (this.localPath === undefined || !fs.existsSync(this.localPath)) {
+    if (!fs.existsSync(this.localPath)) {
       throw new Error(`could not find folder under path ${this.localPath}`);
     }
 
@@ -407,7 +431,6 @@ export class LocalFolderUploader extends CachedFolderUploader {
     await FolderUtil.removeZip(from);
 
     // register upload in database & mark complete
-    await this.register();
     this.isComplete = true;
   }
 
@@ -418,10 +441,14 @@ export class LocalFolderUploader extends CachedFolderUploader {
    */
   public async upload() {
     await this.uploadToPath(this.hpcPath);
+
+    await this.register();
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   protected async uploadToCache(): Promise<void> {
-    await this.uploadToPath(this.getCacheFile());
+    // need some way to detect cache invalidation
+    throw new NotImplementedError("Not implemented");
   }
 }
 
@@ -433,7 +460,6 @@ export class LocalFolderUploader extends CachedFolderUploader {
  */
 export class GitFolderUploader extends LocalFolderUploader   {
   private gitId: string;
-  private git: Git; 
 
   constructor(
     from: GitFolder,
@@ -443,26 +469,9 @@ export class GitFolderUploader extends LocalFolderUploader   {
   ) {
     const localPath: string = GitUtil.getLocalPath(from.gitId);
     
-    super({ localPath }, hpcName, userId, connector);
+    super({ type: "local", localPath }, hpcName, userId, connector);
     this.gitId = from.gitId;
   }
-
-  public async uploadToPath(path: string) {
-    // try to find the git repo in the database
-    const connection = await this.db.connect();
-    const gitRepo = connection.getRepository(Git);
-
-    const foundGit = await gitRepo.findOne(this.gitId);
-    if (!foundGit) {
-      throw new Error(`cannot find git repo with id ${this.gitId}`);
-    }
-    this.git = foundGit;
-
-    // repull git if old, then upload (via SCP)
-    await GitUtil.refreshGit(this.git);
-    await super.uploadToPath(path);
-  }
-
   /**
    * Specialization of cache upload for uploading a git folder. Has functionality to upload if and only if
    * the cached git repository is out of date. 
@@ -470,12 +479,23 @@ export class GitFolderUploader extends LocalFolderUploader   {
    * @protected
    */
   protected async uploadToCache(): Promise<void> {
-    const outOfDate = await GitUtil.outOfDate(this.git);
-    if (!outOfDate) {
-      return;
+    const git = await GitUtil.findGit(this.gitId);
+
+    if (!git) {
+      throw Error("Could not find git repository to upload.");
     }
 
-    await this.uploadToPath(this.getCacheFile());
+    const cacheUpdateTime = await this.getUpdateTime();
+    // account for milliseconds
+    const localUpdateTime = await GitUtil.getLastCommitTime(git) * 1000;
+
+    if (cacheUpdateTime < localUpdateTime) {
+      await this.uploadToPath(this.cachePath);
+
+      await this.registerCache();
+    } 
+
+    await this.register();
   }
 }
 
@@ -500,14 +520,12 @@ export class FolderUploaderHelper {
    * @return {Promise<BaseFolderUploader>} folder uploader object used to upload the folder, can check if upload was successful via {uploader}.isComplete
    */
   static async upload(
-    from: AnyFolder,
+    from: BaseFolder,
     hpcName: string,
     userId: string,
     jobId = "",
     connector: Connector | null = null
   ): Promise<BaseFolderUploader> {
-    // if type not specified, throw an error
-    if (!from.type) throw new Error("invalid local file format");
 
     let uploader: BaseFolderUploader;
     switch (from.type) {
@@ -548,15 +566,10 @@ export class FolderUploaderHelper {
       uploader = new EmptyFolderUploader(hpcName, userId, jobId, connector);
       await uploader.upload();
       break;
-
-    default:
-      throw new Error("undefined file type " + from.type);
     }
 
     return uploader;
   }
-
-  stat;
 
   /**
    * Uploads a generic folder and returns the helper used to do so. Uses the cached versions of everything.
@@ -566,7 +579,6 @@ export class FolderUploaderHelper {
    * @param {NeedUploadFolder} from either a GlobusFolder, GitFolder, or LocalFolder
    * @param {string} hpcName name of hpc to uplaod to
    * @param {string} userId current user
-   * @param {string} [jobId=""] job associated with the folder upload (optional)
    * @param {Connector} [connector=null] connector to connect to HPC with, if needed
    * @throws {Error} invalid file type/format
    * @return {Promise<BaseFolderUploader>} folder uploader object used to upload the folder, can check if upload was successful via {uploader}.isComplete
@@ -574,6 +586,7 @@ export class FolderUploaderHelper {
   static async cachedUploadGit(
     from: GitFolder,
     hpcName: string,
+    userId: string,
     connector: Connector | null = null
   ): Promise<CachedFolderUploader> {
     // if type not specified, throw an error
@@ -582,7 +595,7 @@ export class FolderUploaderHelper {
     const uploader = new GitFolderUploader(
       from,
       hpcName,
-      "cache",
+      userId,
       connector
     );
 

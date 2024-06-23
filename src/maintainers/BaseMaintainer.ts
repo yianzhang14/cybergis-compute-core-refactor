@@ -7,10 +7,10 @@ import {
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";
-import DB from "../DB";
+import dataSource from "../DB";
 import * as Helper from "../lib/Helper";
 import { Job } from "../models/Job";
-import Supervisor from "../Supervisor";
+// import Supervisor from "../Supervisor";
 import {
   maintainerConfig,
   event,
@@ -24,17 +24,16 @@ import {
  */
 abstract class BaseMaintainer {
   /** parent pointer **/
-  public supervisor: Supervisor;
+  // public supervisor: Supervisor;
 
   /** packages **/
   public validator = validator; // https://github.com/validatorjs/validator.js
-  public db: DB;
 
   /** config **/
   public job: Job;
   public hpc: hpcConfig | undefined = undefined;
   public maintainerConfig: maintainerConfig | undefined = undefined;
-  public id: string | undefined = undefined;
+  public id: string;
   public slurm: slurm | undefined = undefined;
 
   /** mutex **/
@@ -60,11 +59,11 @@ abstract class BaseMaintainer {
     Record<string, (_val: string) => boolean> | undefined = undefined;
   public envParamDefault: Record<string, string> = {};
   public envParam: Record<string, string> = {};
-  public appParamValidators = undefined;
-  public appParam: Record<string, string> = {};
+  // public appParamValidators = undefined;
+  // public appParam: Record<string, string> = {};
 
   /** HPC connectors **/
-  public connector: BaseConnector | undefined = undefined;
+  public connector!: BaseConnector;
 
   /** data **/
   protected logs: string[] = [];
@@ -74,10 +73,12 @@ abstract class BaseMaintainer {
   /** constructor **/
   constructor(job: Job) {
     // try to validate the job's environment
-    for (const i in this.envParamValidators) {
-      const val: string = job.env[i];
-      if (val != undefined) {
-        if (this.envParamValidators[i](val)) this.envParam[i] = val;
+    if (job.env !== undefined) {
+      for (const i in this.envParamValidators) {
+        const val: string = job.env[i];
+        if (val != undefined) {
+          if (this.envParamValidators[i](val)) this.envParam[i] = val;
+        }
       }
     }
     
@@ -86,7 +87,6 @@ abstract class BaseMaintainer {
     this.maintainerConfig = maintainerConfigMap[job.maintainer];
     this.id = job.id;
     this.slurm = job.slurm;
-    this.db = new DB();
 
     // determine if the current hpc exists within the config
     const hpc = job.hpc ? job.hpc : this.maintainerConfig.default_hpc;
@@ -256,16 +256,15 @@ abstract class BaseMaintainer {
    * @param {jobMaintainerUpdatable} job - New information to update this job with.
    */
   public async updateJob(job: jobMaintainerUpdatable) {
-    const connection = await this.db.connect();
-    await connection
+    await dataSource
       .createQueryBuilder()
       .update(Job)
       .where("id = :id", { id: this.id })
       .set(job)
       .execute();
-    const jobRepo = connection.getRepository(Job);
+    const jobRepo = dataSource.getRepository(Job);
 
-    const temp = await jobRepo.findOne(this.id);
+    const temp = await jobRepo.findOneBy({ id: this.id });
     Helper.nullGuard(temp);
     this.job = temp;
   }
