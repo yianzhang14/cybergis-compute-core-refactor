@@ -1,14 +1,17 @@
-import express = require("express");
-import * as path from "path";
 import {
   jupyterGlobusMap
-} from "./configs/config";
+} from "@configs/config";
+import express = require("express");
+
+import * as path from "path";
+
+import { Job } from "../models/Job";
+import GlobusUtil from "../shared/GlobusUtil";
+import * as Helper from "../shared/Helper";
+import JobUtil from "../shared/JobUtil";
+import dataSource from "../utils/DB";
+
 import { authMiddleWare } from "./ServerUtil";
-import dataSource from "./src/DB";
-import GlobusUtil from "./src/lib/GlobusUtil";
-import * as Helper from "./src/lib/Helper";
-import JobUtil from "./src/lib/JobUtil";
-import { Job } from "./src/models/Job";
 
 const userRouter = express.Router();
 

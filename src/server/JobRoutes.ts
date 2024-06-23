@@ -1,17 +1,19 @@
-import express = require("express");
 import {
   hpcConfigMap,
   maintainerConfigMap,
-} from "./configs/config";
-import { authMiddleWare, requestErrors, validator, schemas, sshCredentialGuard, prepareDataForDB, supervisor, resultFolderContent } from "./ServerUtil";
-import dataSource from "./src/DB";
-import * as Helper from "./src/lib/Helper";
-import JobUtil from "./src/lib/JobUtil";
-import { Job } from "./src/models/Job";
+} from "@configs/config";
+import express = require("express");
+
+import { Job } from "../models/Job";
+import * as Helper from "../shared/Helper";
+import JobUtil from "../shared/JobUtil";
+import dataSource from "../utils/DB";
 import type {
   createJobBody,
   updateJobBody,
-} from "./src/types";
+} from "../utils/types";
+
+import { authMiddleWare, requestErrors, validator, schemas, sshCredentialGuard, prepareDataForDB, supervisor, resultFolderContent } from "./ServerUtil";
 
 
 const jobRouter = express.Router();

@@ -18,7 +18,7 @@ module.exports = [
     },
     parserOptions: {
       ecmaVersion: "latest",
-      project: ["tsconfig(.*)?.json"]
+      project: ["tsconfig(.*)?.json"],
     }
   }),
   {
@@ -66,7 +66,7 @@ module.exports = [
             order: "asc",
           },
           groups: ["external", "builtin", "parent", ["sibling", "index"]],
-          "newlines-between": "never",
+          "newlines-between": "always",
           pathGroups: [
             {
               group: "external",
@@ -103,4 +103,7 @@ module.exports = [
       ]
     },
   },
+  {
+    ignores: ["**/temp.*", "production/*", "node_modules/*"]
+  }
 ];

@@ -1,6 +1,8 @@
 import { Command } from "commander";
-import dataSource from "./src/DB";
+
 import { Git } from "./src/models/Git";
+import dataSource from "./src/utils/DB";
+
 const pkg: {version: string} = require("../package.json");  // eslint-disable-line
 const cmd = new Command();
 

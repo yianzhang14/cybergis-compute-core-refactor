@@ -1,9 +1,10 @@
 import express = require("express");
-import dataSource from "./src/DB";
-import GitUtil from "./src/lib/GitUtil";
-import * as Helper from "./src/lib/Helper";
-import { Git } from "./src/models/Git";
-import { executableManifest } from "./src/types";
+
+import { Git } from "../models/Git";
+import GitUtil from "../shared/GitUtil";
+import * as Helper from "../shared/Helper";
+import dataSource from "../utils/DB";
+import { executableManifest } from "../utils/types";
 
 const gitRouter = express.Router();
 

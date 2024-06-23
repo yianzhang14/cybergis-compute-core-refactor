@@ -1,6 +1,7 @@
-import { config, hpcConfigMap, jupyterGlobusMap } from "../../configs/config";
+import { config, hpcConfigMap, jupyterGlobusMap } from "@configs/config";
+
 import { Job } from "../models/Job";
-import { callableFunction } from "../types";
+import { callableFunction } from "../utils/types";
 // import * as fs from "fs";
 
 

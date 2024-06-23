@@ -1,8 +1,11 @@
+import { config } from "@configs/config";
+
 import * as path from "path";
-import { config } from "../../configs/config";
-import { ConnectorError } from "../errors";
-import * as Helper from "../lib/Helper";
-import { slurm } from "../types";
+
+import * as Helper from "../shared/Helper";
+import { ConnectorError } from "../utils/errors";
+import { slurm } from "../utils/types";
+
 import BaseConnector from "./BaseConnector";
 // import { FolderUploaderHelper } from "../FolderUploader";
 

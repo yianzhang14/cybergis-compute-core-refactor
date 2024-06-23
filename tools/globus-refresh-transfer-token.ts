@@ -1,7 +1,8 @@
-import { config, hpcConfigMap } from "../configs/config";
-import dataSource from "../src/DB";
-import PythonUtil from "../src/lib/PythonUtil";
+import { config, hpcConfigMap } from "@configs/config";
+
 import { GlobusTransferRefreshToken } from "../src/models/GlobusTransferRefreshToken";
+import PythonUtil from "../src/shared/PythonUtil";
+import dataSource from "../src/utils/DB";
 
 const main = async () => {
   const identities: string[] = [];

@@ -1,11 +1,14 @@
+import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "@configs/config";
 import express = require("express");
+
 import * as fs from "fs";
-import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "./configs/config";
+
+import { Job } from "../models/Job";
+import * as Helper from "../shared/Helper";
+import dataSource from "../utils/DB";
+import { hpcConfig, maintainerConfig, containerConfig, jupyterGlobusMapConfig, announcementsConfig } from "../utils/types";
+
 import { authMiddleWare, statistic } from "./ServerUtil";
-import dataSource from "./src/DB";
-import * as Helper from "./src/lib/Helper";
-import { Job } from "./src/models/Job";
-import { hpcConfig, maintainerConfig, containerConfig, jupyterGlobusMapConfig, announcementsConfig } from "./src/types";
 
 const infoRouter = express.Router();
 

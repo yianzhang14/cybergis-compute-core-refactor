@@ -1,6 +1,7 @@
+import { config, hpcConfigMap } from "@configs/config";
 import NodeSSH = require("node-ssh");
-import { config, hpcConfigMap } from "../../configs/config";
-import { SSH, SSHConfig } from "../types";
+
+import { SSH, SSHConfig } from "../utils/types";
 
 // dictionary recording ssh connections for community accounts (which have public ssh ability)
 const connectionPool: Record<string, { counter: number, ssh: SSH }> = {};

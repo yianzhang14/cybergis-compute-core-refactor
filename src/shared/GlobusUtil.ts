@@ -1,8 +1,10 @@
-import { config } from "../../configs/config";
-import dataSource from "../DB";
+import { config } from "@configs/config";
+
 import { GlobusTransferRefreshToken } from 
   "../models/GlobusTransferRefreshToken";
-import { GlobusFolder, hpcConfig } from "../types";
+import dataSource from "../utils/DB";
+import { GlobusFolder, hpcConfig } from "../utils/types";
+
 import * as Helper from "./Helper";
 import PythonUtil from "./PythonUtil";
 

@@ -10,6 +10,7 @@ import {
   ManyToOne,
   // JoinColumn,
 } from "typeorm";
+
 import BaseMaintainer from "../maintainers/BaseMaintainer";
 import {
   credential,
@@ -18,7 +19,8 @@ import {
   LocalFolder,
   NeedUploadFolder,
   slurm,
-} from "../types";
+} from "../utils/types";
+
 import { Event } from "./Event";
 import { Folder } from "./Folder";
 import { Log } from "./Log";

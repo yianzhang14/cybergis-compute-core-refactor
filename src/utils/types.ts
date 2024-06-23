@@ -2,7 +2,8 @@
 import NodeSSH = require("node-ssh");
 import { ConnectConfig } from "ssh2";
 import { Prompt } from "ssh2-streams";
-import { Folder } from "./models/Folder";
+
+import { Folder } from "../models/Folder";
 
 type unit = "GB" | "MB" | "Minutes" | "Hours" | "Days" | "None";
 

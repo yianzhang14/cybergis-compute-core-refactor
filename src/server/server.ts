@@ -1,19 +1,21 @@
 
-import express = require("express");
 // import { Console } from "console";
-const swaggerDocument: Record<string, unknown> = require("../production/swagger.json");  // eslint-disable-line
+const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");  // eslint-disable-line
 // import bodyParser = require("body-parser");
+import {
+  config,
+} from "@configs/config";
+import express = require("express");
 import fileUpload = require("express-fileupload");
 import morgan = require("morgan");
 import swaggerUI = require("swagger-ui-express");
-import {
-  config,
-} from "./configs/config";
+
+import dataSource from "../utils/DB";
+
 import folderRouter from "./FolderRoutes";
 import gitRouter from "./GitRoutes";
 import infoRouter from "./InfoRoutes";
 import jobRouter from "./JobRoutes";
-import dataSource from "./src/DB";
 import userRouter from "./UserRoutes";
 
 // create the express app
@@ -55,7 +57,7 @@ app.use(
 );
 
 // create documentation routes
-app.use("/ts-docs", express.static("production/tsdoc"));
+app.use("/ts-docs", express.static(__dirname + "../../tsdoc"));
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 /**

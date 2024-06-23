@@ -1,12 +1,15 @@
+import { config, maintainerConfigMap, hpcConfigMap } from "@configs/config";
 import NodeSSH = require("node-ssh");
+
 import * as events from "events";
-import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
-import connectionPool from "./connectors/ConnectionPool";
+
+import connectionPool from "../connectors/ConnectionPool";
+import BaseMaintainer from "../maintainers/BaseMaintainer";
+import { Job } from "../models/Job";
+import * as Helper from "../shared/Helper";
+
 import dataSource from "./DB";
 import Emitter from "./Emitter";
-import * as Helper from "./lib/Helper";
-import BaseMaintainer from "./maintainers/BaseMaintainer";
-import { Job } from "./models/Job";
 import { JobQueue } from "./Redis";
 import { SSH, callableFunction } from "./types";
 

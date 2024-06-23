@@ -1,15 +1,16 @@
-import validator from "validator";
 import {
   config,
   hpcConfigMap,
   maintainerConfigMap,
-} from "../../configs/config";
+} from "@configs/config";
+import validator from "validator";
+
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";
-import dataSource from "../DB";
-import * as Helper from "../lib/Helper";
 import { Job } from "../models/Job";
+import * as Helper from "../shared/Helper";
+import dataSource from "../utils/DB";
 // import Supervisor from "../Supervisor";
 import {
   maintainerConfig,
@@ -17,7 +18,7 @@ import {
   slurm,
   jobMaintainerUpdatable,
   hpcConfig,
-} from "../types";
+} from "../utils/types";
 
 /**
  * This is an abstract class for compute core job maintainers, which are responsible for submitting jobs and monitoring them.

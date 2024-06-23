@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "ESNext",
-        "module": "commonjs",
+        "target": "ES2022",
+        "module": "CommonJS",
         "declaration": false,
         "strict": true,
         "noImplicitAny": true,
@@ -13,16 +13,17 @@
         "resolveJsonModule" : true,
         "strictNullChecks": true,
         "esModuleInterop": true,
-        "lib": [
-            "es5",
-            "es6"
-         ],
          "moduleResolution": "node",
-         "sourceMap": true
+         "sourceMap": true,
+         "baseUrl": ".",
+         "paths": {
+            "@configs/*": [
+                "configs/*"
+            ]
+        }
       },
     "include": [
         "**/*",
-        "src/maintainers/*",
         ".eslintrc.js"
     ],
     "exclude": [

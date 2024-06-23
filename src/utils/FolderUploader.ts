@@ -1,17 +1,20 @@
+import { hpcConfigMap } from "@configs/config";
+
 import * as fs from "fs";
 import * as path from "path";
-import { hpcConfigMap } from "../configs/config";
-import BaseConnector from "./connectors/BaseConnector";
-import SingularityConnector from "./connectors/SingularityConnector";
-import SlurmConnector from "./connectors/SlurmConnector";
+
+import BaseConnector from "../connectors/BaseConnector";
+import SingularityConnector from "../connectors/SingularityConnector";
+import SlurmConnector from "../connectors/SlurmConnector";
+import { Cache } from "../models/Cache";
+import { Folder } from "../models/Folder";
+import FolderUtil from "../shared/FolderUtil";
+import GitUtil from "../shared/GitUtil";
+import GlobusUtil from "../shared/GlobusUtil";
+import * as Helper from "../shared/Helper";
+
 import dataSource from "./DB";
 import { NotImplementedError } from "./errors";
-import FolderUtil from "./lib/FolderUtil";
-import GitUtil from "./lib/GitUtil";
-import GlobusUtil from "./lib/GlobusUtil";
-import * as Helper from "./lib/Helper";
-import { Cache } from "./models/Cache";
-import { Folder } from "./models/Folder";
 import {
   BaseFolder,
   GitFolder,

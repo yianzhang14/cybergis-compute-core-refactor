@@ -1,8 +1,10 @@
-import { config } from "../configs/config";
+import { config } from "@configs/config";
+
+import { Event } from "../models/Event";
+import { Job } from "../models/Job";
+import { Log } from "../models/Log";
+
 import dataSource from "./DB";
-import { Event } from "./models/Event";
-import { Job } from "./models/Job";
-import { Log } from "./models/Log";
 
 /**
  * This class abstracts away the "emission" of events/signals relating to job statuses via mutations to the database. 

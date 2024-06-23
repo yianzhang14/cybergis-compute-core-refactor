@@ -1,7 +1,9 @@
+import { jupyterGlobusMap } from "@configs/config";
 import axios from "axios";
+
 import * as path from "path";
-import { jupyterGlobusMap } from "../configs/config";
-import * as Helper from "./lib/Helper";
+
+import * as Helper from "../shared/Helper";
 
 declare interface decodedToken {
   host: string;

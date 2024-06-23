@@ -1,11 +1,12 @@
+import { config } from "@configs/config";
 import {
   DataSourceOptions,
   DataSource,
 } from "typeorm";
-import { config } from "../configs/config";
-import * as Helper from "./lib/Helper"; 
 
-const entities = [__dirname + "/models/**/*.js"];
+import * as Helper from "../shared/Helper"; 
+
+const entities = [__dirname + "../models/**/*.js"];
 
 let dbConfig: DataSourceOptions = {
   name: "default",

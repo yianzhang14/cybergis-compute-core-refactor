@@ -1,18 +1,21 @@
-import express = require("express");
-import * as path from "path";
 import {
   hpcConfigMap,
-} from "./configs/config";
-import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./ServerUtil";
-import dataSource from "./src/DB";
-import GlobusUtil from "./src/lib/GlobusUtil";
-import * as Helper from "./src/lib/Helper";
-import { Folder } from "./src/models/Folder";
+} from "@configs/config";
+import express = require("express");
+
+import * as path from "path";
+
+import { Folder } from "../models/Folder";
+import GlobusUtil from "../shared/GlobusUtil";
+import * as Helper from "../shared/Helper";
+import dataSource from "../utils/DB";
 import type {
   updateFolderBody,
   initGlobusDownloadBody,
   GlobusFolder
-} from "./src/types";
+} from "../utils/types";
+
+import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./ServerUtil";
 
 const folderRouter = express.Router();
 
