@@ -2,7 +2,7 @@ import {
   hpcConfigMap,
   maintainerConfigMap,
 } from "@configs/config";
-import express = require("express");
+import express from "express";
 
 import * as Helper from "../helpers/Helper";
 import JobUtil from "../helpers/JobUtil";

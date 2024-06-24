@@ -1,6 +1,8 @@
 import { config } from "@configs/config";
 
 import { spawn } from "child_process";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 /**
  * Helper class for interfacing with python scripts in the ./python directory. Primarily deals with globus.
@@ -22,6 +24,8 @@ export default class PythonUtil {
     args: string[] = [],
     returnTags: string[] = []
   ): Promise<Record<string, unknown>> {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+
     args.unshift(`${__dirname}/python/${file}`);
     const child = spawn("python3", args);
     const out: Record<string, unknown> = {};

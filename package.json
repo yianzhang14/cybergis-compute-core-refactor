@@ -3,6 +3,7 @@
    "version": "1.0.0",
    "description": "",
    "main": "cli.js",
+   "type": "module",
    "directories": {
       "test": "test"
    },
@@ -50,6 +51,7 @@
       "validator": "^13.7.0"
    },
    "devDependencies": {
+      "@globus/types": "^0.0.7",
       "@inscreen/typeorm-uml": "^1.6.5-is1",
       "@stylistic/eslint-plugin": "^1.6.1",
       "@types/axios": "^0.14.0",

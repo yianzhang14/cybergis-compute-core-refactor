@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires */
 
-const globals = require("globals");
-const eslint = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const importPlugin = require("eslint-plugin-import");
-const { FlatCompat } = require("@eslint/eslintrc");
-const stylistic = require("@stylistic/eslint-plugin");
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import globals from 'globals';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
+import { FlatCompat } from '@eslint/eslintrc';
+import stylistic from '@stylistic/eslint-plugin';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-module.exports = [
+export default [
   ...compat.config({
     env: {
       node: true

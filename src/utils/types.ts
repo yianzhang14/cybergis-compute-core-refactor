@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import NodeSSH = require("node-ssh");
+
+import NodeSSH from "node-ssh";
 import { ConnectConfig } from "ssh2";
 import { Prompt } from "ssh2-streams";
 

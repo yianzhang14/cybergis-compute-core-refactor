@@ -1,7 +1,7 @@
 import {
   jupyterGlobusMap
 } from "@configs/config";
-import express = require("express");
+import express from "express";
 
 import * as path from "path";
 

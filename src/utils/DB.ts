@@ -4,7 +4,12 @@ import {
   DataSource,
 } from "typeorm";
 
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
 import * as Helper from "../helpers/Helper"; 
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const entities = [__dirname + "../models/**/*.js"];
 

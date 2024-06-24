@@ -1,5 +1,5 @@
 import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "@configs/config";
-import express = require("express");
+import express from "express";
 
 import * as fs from "fs";
 

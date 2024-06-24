@@ -1,5 +1,5 @@
 import { config, maintainerConfigMap, hpcConfigMap } from "@configs/config";
-import NodeSSH = require("node-ssh");
+import NodeSSH from "node-ssh";
 
 import * as events from "events";
 

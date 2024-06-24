@@ -1,14 +1,13 @@
-
-// import { Console } from "console";
-const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");  // eslint-disable-line
-// import bodyParser = require("body-parser");
 import {
   config,
 } from "@configs/config";
-import express = require("express");
-import fileUpload = require("express-fileupload");
-import morgan = require("morgan");
-import swaggerUI = require("swagger-ui-express");
+import express from "express";
+import fileUpload from "express-fileupload";
+import morgan from "morgan";
+import swaggerUI from "swagger-ui-express";
+
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 import dataSource from "../utils/DB";
 
@@ -17,6 +16,9 @@ import gitRouter from "./GitRoutes";
 import infoRouter from "./InfoRoutes";
 import jobRouter from "./JobRoutes";
 import userRouter from "./UserRoutes";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");  // eslint-disable-line
 
 // create the express app
 const app = express();
