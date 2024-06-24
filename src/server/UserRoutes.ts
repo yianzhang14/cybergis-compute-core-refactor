@@ -1,10 +1,10 @@
-import {
-  jupyterGlobusMap
-} from "@configs/config";
 import express = require("express");
 
 import * as path from "path";
 
+import {
+  jupyterGlobusMap
+} from "../../configs/config";
 import GlobusUtil from "../helpers/GlobusUtil";
 import * as Helper from "../helpers/Helper";
 import JobUtil from "../helpers/JobUtil";

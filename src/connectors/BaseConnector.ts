@@ -1,8 +1,8 @@
-import { config, hpcConfigMap } from "@configs/config";
 
 import { existsSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
 
+import { config, hpcConfigMap } from "../../configs/config";
 import FileUtil from "../helpers/FolderUtil";  // shouldn't this be registerUtil?
 import * as Helper from "../helpers/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";

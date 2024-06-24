@@ -1,9 +1,9 @@
-import { config } from "@configs/config";
 import {
   DataSourceOptions,
   DataSource,
 } from "typeorm";
 
+import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
 
 const entities = [__dirname + "../models/**/*.js"];

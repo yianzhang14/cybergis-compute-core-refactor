@@ -1,6 +1,6 @@
-import { config } from "@configs/config";
 import { RedisClientType, createClient } from "redis";
 
+import { config } from "../../configs/config";
 import { Job } from "../models/Job";
 
 import dataSource from "./DB";

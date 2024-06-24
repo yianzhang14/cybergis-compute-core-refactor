@@ -2,14 +2,14 @@
 // import { Console } from "console";
 const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");  // eslint-disable-line
 // import bodyParser = require("body-parser");
-import {
-  config,
-} from "@configs/config";
 import express = require("express");
 import fileUpload = require("express-fileupload");
 import morgan = require("morgan");
 import swaggerUI = require("swagger-ui-express");
 
+import {
+  config,
+} from "../../configs/config";
 import dataSource from "../utils/DB";
 
 import folderRouter from "./FolderRoutes";

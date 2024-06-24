@@ -1,7 +1,6 @@
-import { containerConfigMap, hpcConfigMap, kernelConfigMap } from "@configs/config";
-
 import * as path from "path";
 
+import { containerConfigMap, hpcConfigMap, kernelConfigMap } from "../../configs/config";
 import * as Helper from "../helpers/Helper";
 import { slurm, executableManifest } from "../utils/types";
 

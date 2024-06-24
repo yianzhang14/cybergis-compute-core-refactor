@@ -1,8 +1,8 @@
-import { config, maintainerConfigMap, hpcConfigMap } from "@configs/config";
 import NodeSSH = require("node-ssh");
 
 import * as events from "events";
 
+import { config, maintainerConfigMap, hpcConfigMap } from "../../configs/config";
 import connectionPool from "../connectors/ConnectionPool";
 import * as Helper from "../helpers/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";

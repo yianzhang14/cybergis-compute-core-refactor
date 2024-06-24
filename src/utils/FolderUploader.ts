@@ -1,8 +1,8 @@
-import { hpcConfigMap } from "@configs/config";
 
 import * as fs from "fs";
 import * as path from "path";
 
+import { hpcConfigMap } from "../../configs/config";
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";

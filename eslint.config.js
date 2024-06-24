@@ -1,32 +1,30 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires */
+/* eslint-disable */
 
-const globals = require("globals");
 const eslint = require("@eslint/js");
 const tseslint = require("typescript-eslint");
 const importPlugin = require("eslint-plugin-import");
-const { FlatCompat } = require("@eslint/eslintrc");
 const stylistic = require("@stylistic/eslint-plugin");
+const globals = require("globals");
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
 
-module.exports = [
-  ...compat.config({
-    env: {
-      node: true
-    },
-    parserOptions: {
-      ecmaVersion: "latest",
-      project: ["tsconfig(.*)?.json"],
-    }
-  }),
-  {
-    languageOptions: { globals: globals.browser },
-  },
+module.exports = tseslint.config(
   eslint.configs.recommended,
+
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: __dirname
+      },
+      globals: {
+        ...globals.node
+      }
+    },
+    
+  },
+
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
@@ -103,7 +101,8 @@ module.exports = [
       ]
     },
   },
+
   {
-    ignores: ["**/temp.*", "production/*", "node_modules/*"]
+    ignores: ["production/*"]
   }
-];
+);

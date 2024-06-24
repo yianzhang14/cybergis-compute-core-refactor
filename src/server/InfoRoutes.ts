@@ -1,8 +1,8 @@
-import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "@configs/config";
 import express = require("express");
 
 import * as fs from "fs";
 
+import { hpcConfigMap, maintainerConfigMap, containerConfigMap, jupyterGlobusMap } from "../../configs/config";
 import * as Helper from "../helpers/Helper";
 import { Job } from "../models/Job";
 import dataSource from "../utils/DB";

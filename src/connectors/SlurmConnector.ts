@@ -1,7 +1,6 @@
-import { config } from "@configs/config";
-
 import * as path from "path";
 
+import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper";
 import { ConnectorError } from "../utils/errors";
 import { slurm } from "../utils/types";
