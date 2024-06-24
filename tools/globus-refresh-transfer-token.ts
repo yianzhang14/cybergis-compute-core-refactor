@@ -1,5 +1,4 @@
-import { config, hpcConfigMap } from "@configs/config";
-
+import { config, hpcConfigMap } from "../configs/config";
 import PythonUtil from "../src/helpers/PythonUtil";
 import { GlobusTransferRefreshToken } from "../src/models/GlobusTransferRefreshToken";
 import dataSource from "../src/utils/DB";

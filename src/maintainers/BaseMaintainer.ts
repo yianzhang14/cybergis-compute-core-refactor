@@ -1,10 +1,10 @@
+import validator from "validator";
+
 import {
   config,
   hpcConfigMap,
   maintainerConfigMap,
-} from "@configs/config";
-import validator from "validator";
-
+} from "../../configs/config";
 import BaseConnector from "../connectors/BaseConnector";
 import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";

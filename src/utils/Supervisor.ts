@@ -1,8 +1,8 @@
-import { config, maintainerConfigMap, hpcConfigMap } from "@configs/config";
 import NodeSSH from "node-ssh";
 
 import * as events from "events";
 
+import { config, maintainerConfigMap, hpcConfigMap } from "../../configs/config";
 import connectionPool from "../connectors/ConnectionPool";
 import * as Helper from "../helpers/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
@@ -74,10 +74,9 @@ class Supervisor {
           if (!job) continue;
 
           // eslint-disable-next-line
-          const maintainer: new(job: Job) => BaseMaintainer = require(`./maintainers/${
+          const maintainer: new(job: Job) => BaseMaintainer = (await import(`./maintainers/${
             maintainerConfigMap[job.maintainer].maintainer
-          }`).default;  // eslint-disable-line
-            // ^ typescript compilation hack 
+          }`)).default;  // eslint-disable-line @typescript-eslint/no-unsafe-member-access
             // TODO: don't do this
 
           try {

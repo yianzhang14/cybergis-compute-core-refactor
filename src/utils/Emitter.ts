@@ -1,5 +1,4 @@
-import { config } from "@configs/config";
-
+import { config } from "../../configs/config";
 import { Event } from "../models/Event";
 import { Job } from "../models/Job";
 import { Log } from "../models/Log";

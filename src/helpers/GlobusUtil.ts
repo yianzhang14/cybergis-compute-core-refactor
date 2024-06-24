@@ -1,5 +1,4 @@
-import { config } from "@configs/config";
-
+import { config } from "../../configs/config";
 import { GlobusTransferRefreshToken } from 
   "../models/GlobusTransferRefreshToken";
 import dataSource from "../utils/DB";

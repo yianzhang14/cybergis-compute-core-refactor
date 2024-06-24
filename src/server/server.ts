@@ -1,6 +1,3 @@
-import {
-  config,
-} from "@configs/config";
 import express from "express";
 import fileUpload from "express-fileupload";
 import morgan from "morgan";
@@ -9,6 +6,9 @@ import swaggerUI from "swagger-ui-express";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
+import {
+  config,
+} from "../../configs/config";
 import dataSource from "../utils/DB";
 
 import folderRouter from "./FolderRoutes";
@@ -18,30 +18,19 @@ import jobRouter from "./JobRoutes";
 import userRouter from "./UserRoutes";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");  // eslint-disable-line
+const swaggerDocument: Record<string, unknown> = require(__dirname + "../../swagger.json");
 
 // create the express app
 const app = express();
 
 
 // establish database connection
-dataSource
-  .initialize()
-  .then(() => {
-    console.log("Data Source has been initialized!");
-  })
-  .catch((err) => {
-    console.error("Error during Data Source initialization:", err);
-    throw err;
-  });
-
+await dataSource.initialize();
 
 // handle parsing arguments
-// app.use(bodyParser.json());  // possibly unneeded now with newer versions of express
 app.use(express.json());
 app.use(morgan("combined"));
 app.use(express.urlencoded({ extended: true }));
-// app.use(bodyParser.urlencoded({ extended: true }));
 
 // uploading files
 app.use(
@@ -83,7 +72,7 @@ app.get("/", (req, res) => {
    *  put:
    *      description: Not yet implemented
    */
-app.put("/clean", async function (_req, _res) { });  // eslint-disable-line
+app.put("/clean", async function (_req, _res) { });  // eslint-disable-line @typescript-eslint/no-empty-function
 
 app.use("/folder", folderRouter);
 app.use("/git", gitRouter);

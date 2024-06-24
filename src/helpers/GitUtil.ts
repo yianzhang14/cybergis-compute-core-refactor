@@ -1,4 +1,3 @@
-import { config } from "@configs/config";
 import { clone, pull, fetch, checkout, log } from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 import { rimraf } from "rimraf";
@@ -7,6 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 
+import { config } from "../../configs/config";
 import { Git } from "../models/Git";
 import dataSource from "../utils/DB";
 import {
@@ -24,7 +24,7 @@ import {
 
 import FolderUtil from "./FolderUtil";
 
-const exec: Function = promisify(require("child_process").exec); // eslint-disable-line
+const exec: Function = promisify((await import("child_process")).exec); // eslint-disable-line
 
 /**
  * 

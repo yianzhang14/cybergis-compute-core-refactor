@@ -1,36 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires */
+/* eslint-disable */
 
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import globals from 'globals';
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
 import importPlugin from 'eslint-plugin-import';
-import { FlatCompat } from '@eslint/eslintrc';
 import stylistic from '@stylistic/eslint-plugin';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-export default [
-  ...compat.config({
-    env: {
-      node: true
-    },
-    parserOptions: {
-      ecmaVersion: "latest",
-      project: ["tsconfig(.*)?.json"],
-    }
-  }),
-  {
-    languageOptions: { globals: globals.browser },
-  },
+export default tseslint.config(
   eslint.configs.recommended,
+
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname
+      }
+    }
+  },
+
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
@@ -107,7 +95,8 @@ export default [
       ]
     },
   },
+
   {
-    ignores: ["**/temp.*", "production/*", "node_modules/*"]
+    ignores: ["production/*"]
   }
-];
+);

@@ -1,6 +1,6 @@
-import { config } from "@configs/config";
 import axios from "axios";
 
+import { config } from "../../configs/config";
 import { Job } from "../models/Job";
 import { hpcConfig } from "../utils/types";
 

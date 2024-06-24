@@ -1,4 +1,3 @@
-import { config } from "@configs/config";
 import {
   DataSourceOptions,
   DataSource,
@@ -7,6 +6,7 @@ import {
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
+import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

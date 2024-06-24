@@ -1,10 +1,10 @@
-import {
-  hpcConfigMap,
-} from "@configs/config";
 import express from "express";
 
 import * as path from "path";
 
+import {
+  hpcConfigMap,
+} from "../../configs/config";
 import GlobusUtil from "../helpers/GlobusUtil";
 import * as Helper from "../helpers/Helper";
 import { Folder } from "../models/Folder";

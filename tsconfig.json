@@ -6,25 +6,24 @@
         "strict": true,
         "noImplicitAny": true,
         "noLib": false,
-        "outDir": "production",
+        "outDir": "./production",
         "skipLibCheck": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "resolveJsonModule" : true,
         "strictNullChecks": true,
         "esModuleInterop": true,
-         "moduleResolution": "node",
-         "sourceMap": true,
-         "baseUrl": ".",
-         "paths": {
-            "@configs/*": [
-                "configs/*"
-            ]
-        }
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "rootDir": ".",
       },
     "include": [
-        "**/*",
-        ".eslintrc.js"
+        "src/**/*",
+        "tools/**/*",
+        "configs/**/*",
+        "test/**/*",
+        "eslint.config.js",
+        "cli.ts"
     ],
     "exclude": [
         "node_modules",

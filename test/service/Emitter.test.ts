@@ -1,6 +1,5 @@
 import "jest";
-import { config } from "@configs/config";
-
+import { config } from "../../configs/config";
 import { clearAll } from "../../src/utils/DB";
 import Emitter from "../../src/utils/Emitter";
 import TestHelper from "../TestHelper";
