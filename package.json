@@ -3,9 +3,6 @@
    "version": "1.0.0",
    "description": "",
    "main": "cli.js",
-   "directories": {
-      "test": "test"
-   },
    "scripts": {
       "test": "jest -c ./test/jest.config.js",
       "tsdoc": "typedoc --entryPointStrategy expand ./src  --out ./production/tsdoc",
@@ -18,7 +15,7 @@
       "postbuild": "npm run cpy && npm run doc-gen",
       "lint": "eslint .",
       "typeorm": "typeorm-ts-node-commonjs",
-      "start": "node /production/src/server/server.js"
+      "start": "node ./production/src/server/server.js"
    },
    "repository": {
       "type": "git",

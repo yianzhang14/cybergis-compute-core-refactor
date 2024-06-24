@@ -10,7 +10,7 @@ const options = {
       version: "1.0.0",
     },
   },
-  apis: ["./server.ts", "./FolderRoutes.ts", "./GitRoutes.ts", "./InfoRoutes.ts", "./JobRoutes.ts"], // files containing annotations as above
+  apis: ["./src/server/*"], // files containing annotations as above
 };
 
 const output: object = swaggerJSDoc(options);
