@@ -199,7 +199,7 @@ export interface hpcConfig {
   init_sbatch_script: string[];
   init_sbatch_options: string[];
   description?: string;
-  globus?: {
+  globus: {
     identity: string;
     endpoint: string;
     root_path: string;

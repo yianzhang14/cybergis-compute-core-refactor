@@ -34,7 +34,6 @@ export default class GlobusUtil {
       GlobusTransferRefreshToken
     );
 
-    Helper.nullGuard(hpcConfig.globus);
     const g = await globusTransferRefreshTokenRepo.findOneBy({
       identity: hpcConfig.globus.identity
     });
@@ -138,7 +137,7 @@ export default class GlobusUtil {
       GlobusTransferRefreshToken
     );
     const g = await globusTransferRefreshTokenRepo.findOneBy({
-      identity: hpcConfig.globus?.identity
+      identity: hpcConfig.globus.identity
     });
 
     let out: Record<string, unknown>;

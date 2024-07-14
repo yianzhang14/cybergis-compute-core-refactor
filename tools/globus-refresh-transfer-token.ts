@@ -7,8 +7,8 @@ const main = async () => {
   const identities: string[] = [];
   for (const i in hpcConfigMap) {
     if (hpcConfigMap[i].globus) {
-      if (!(hpcConfigMap[i].globus!.identity in identities)) {
-        identities.push(hpcConfigMap[i].globus!.identity);
+      if (!(hpcConfigMap[i].globus.identity in identities)) {
+        identities.push(hpcConfigMap[i].globus.identity);
       }
     }
   }

@@ -1,11 +1,11 @@
 import express = require("express");
+import { GlobusClient } from "src/helpers/GlobusTransferUtil";
 
 import * as path from "path";
 
 import {
   jupyterGlobusMap
 } from "../../configs/config";
-import GlobusUtil from "../helpers/GlobusUtil";
 import * as Helper from "../helpers/Helper";
 import JobUtil from "../helpers/JobUtil";
 import { Job } from "../models/Job";
@@ -57,7 +57,7 @@ userRouter.get("/", authMiddleWare, (req, res) => {
    *          404:
    *              description: Returns an error if the user"s username is not in the allowlist
    */
-userRouter.get("/jupyter-globus", authMiddleWare, async (req, res) => {
+userRouter.get("/jupyter-globus", authMiddleWare, (req, res) => {
   if (!Helper.isAllowlisted(res.locals.host as string)) {
     res.status(404).json({ error: "Cannot find jupyterhubHost in allowlist" });
     return;
@@ -75,7 +75,7 @@ userRouter.get("/jupyter-globus", authMiddleWare, async (req, res) => {
   
   try {
     // get a processed username (mapping changes depending on the host)
-    username = await GlobusUtil.mapUsername(
+    username = GlobusClient.mapUsername(
       username,
       jupyterGlobus.user_mapping ?? null
     );
