@@ -1,7 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 
-
-
 import { config } from "../../configs/config";
 import { GlobusTransferRefreshToken } from "../models/GlobusTransferRefreshToken";
 import dataSource from "../utils/DB";
@@ -89,6 +87,7 @@ export class GlobusTransferUtil {
     };
 
     try {
+      console.log(this.accessToken);
       const response: AxiosResponse<{ task_id: string }> = await axios.post(`${baseUrl}/transfer`, data, {
         headers: {
           "Content-Type": "application/json",
