@@ -74,7 +74,7 @@ class Supervisor {
           if (!job) continue;
 
           // eslint-disable-next-line
-          const maintainer: new(job: Job) => BaseMaintainer = require(`./maintainers/${
+          const maintainer: new(job: Job) => BaseMaintainer = require(`../maintainers/${
             maintainerConfigMap[job.maintainer].maintainer
           }`).default;  // eslint-disable-line
             // ^ typescript compilation hack 
