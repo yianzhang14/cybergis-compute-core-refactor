@@ -5,6 +5,8 @@ import {
 
 import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
+import { Cache } from "../models/Cache";
+import { Event } from "../models/Event";
 import { Folder } from "../models/Folder";
 import { Git } from "../models/Git";
 import { GlobusTransferRefreshToken } from "../models/GlobusTransferRefreshToken";
