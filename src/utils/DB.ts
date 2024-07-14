@@ -6,7 +6,7 @@ import {
 import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
 
-const entities = ["../models/**/*.js"];
+const entities = ["../models/**/*.js", "../models/**/*.ts"];
 
 let dbConfig: DataSourceOptions = {
   name: "default",
