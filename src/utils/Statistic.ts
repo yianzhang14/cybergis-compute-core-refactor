@@ -1,5 +1,6 @@
+import { Job } from "../models/Job";
+
 import dataSource from "./DB";
-import { Job } from "./models/Job";
 
 /**
  * Wrapper class for requesting statistics from the database.

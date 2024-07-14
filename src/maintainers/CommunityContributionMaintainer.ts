@@ -1,13 +1,14 @@
 import SingularityConnector from "../connectors/SingularityConnector";
-import dataSource from "../DB";
-import { BaseFolderUploader, FolderUploaderHelper } from "../FolderUploader";
-import GitUtil from "../lib/GitUtil";
-import * as Helper from "../lib/Helper";
-import XSEDEUtil from "../lib/XSEDEUtil";
+import GitUtil from "../helpers/GitUtil";
+import * as Helper from "../helpers/Helper";
+import XSEDEUtil from "../helpers/XSEDEUtil";
 import { Folder } from "../models/Folder";
 import { Git } from "../models/Git";
-import { ResultFolderContentManager } from "../Redis";
-import { executableManifest, GitFolder } from "../types";
+import dataSource from "../utils/DB";
+import { BaseFolderUploader, FolderUploaderHelper } from "../utils/FolderUploader";
+import { ResultFolderContentManager } from "../utils/Redis";
+import { executableManifest, GitFolder } from "../utils/types";
+
 import BaseMaintainer from "./BaseMaintainer";
 
 /**

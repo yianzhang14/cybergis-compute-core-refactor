@@ -1,12 +1,14 @@
 import { clone, pull, fetch, checkout, log } from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 import { rimraf } from "rimraf";
+
 import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
+
 import { config } from "../../configs/config";
-import dataSource from "../DB";
 import { Git } from "../models/Git";
+import dataSource from "../utils/DB";
 import {
   executableManifest,
   integerRule,
@@ -18,7 +20,8 @@ import {
   slurm_integer_time_unit_config,
   slurm_string_option_configs,
   stringOptionRule,
-} from "../types";
+} from "../utils/types";
+
 import FolderUtil from "./FolderUtil";
 
 const exec: Function = promisify(require("child_process").exec); // eslint-disable-line

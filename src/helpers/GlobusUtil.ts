@@ -1,8 +1,9 @@
 import { config } from "../../configs/config";
-import dataSource from "../DB";
 import { GlobusTransferRefreshToken } from 
   "../models/GlobusTransferRefreshToken";
-import { GlobusFolder, hpcConfig } from "../types";
+import dataSource from "../utils/DB";
+import { GlobusFolder, hpcConfig } from "../utils/types";
+
 import * as Helper from "./Helper";
 import PythonUtil from "./PythonUtil";
 
@@ -33,7 +34,6 @@ export default class GlobusUtil {
       GlobusTransferRefreshToken
     );
 
-    Helper.nullGuard(hpcConfig.globus);
     const g = await globusTransferRefreshTokenRepo.findOneBy({
       identity: hpcConfig.globus.identity
     });
@@ -76,7 +76,7 @@ export default class GlobusUtil {
     taskId: string,
     hpcConfig: hpcConfig
   ): Promise<string> {
-    return await this._queryStatus(taskId, hpcConfig, "globus_monitor.py");
+    return this._queryStatus(taskId, hpcConfig, "globus_monitor.py");
   }
 
   /**
@@ -91,7 +91,7 @@ export default class GlobusUtil {
     taskId: string,
     hpcConfig: hpcConfig
   ): Promise<string> {
-    return await this._queryStatus(taskId, hpcConfig, "globus_query_status.py");
+    return this._queryStatus(taskId, hpcConfig, "globus_query_status.py");
   }
 
   /**
@@ -137,7 +137,7 @@ export default class GlobusUtil {
       GlobusTransferRefreshToken
     );
     const g = await globusTransferRefreshTokenRepo.findOneBy({
-      identity: hpcConfig.globus?.identity
+      identity: hpcConfig.globus.identity
     });
 
     let out: Record<string, unknown>;

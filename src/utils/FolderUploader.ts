@@ -1,17 +1,21 @@
+
+
 import * as fs from "fs";
 import * as path from "path";
-import { hpcConfigMap } from "../configs/config";
-import BaseConnector from "./connectors/BaseConnector";
-import SingularityConnector from "./connectors/SingularityConnector";
-import SlurmConnector from "./connectors/SlurmConnector";
+
+import { hpcConfigMap } from "../../configs/config";
+import BaseConnector from "../connectors/BaseConnector";
+import SingularityConnector from "../connectors/SingularityConnector";
+import SlurmConnector from "../connectors/SlurmConnector";
+import FolderUtil from "../helpers/FolderUtil";
+import GitUtil from "../helpers/GitUtil";
+import { GlobusClient } from "../helpers/GlobusTransferUtil";
+import * as Helper from "../helpers/Helper";
+import { Cache } from "../models/Cache";
+import { Folder } from "../models/Folder";
+
 import dataSource from "./DB";
 import { NotImplementedError } from "./errors";
-import FolderUtil from "./lib/FolderUtil";
-import GitUtil from "./lib/GitUtil";
-import GlobusUtil from "./lib/GlobusUtil";
-import * as Helper from "./lib/Helper";
-import { Cache } from "./models/Cache";
-import { Folder } from "./models/Folder";
 import {
   BaseFolder,
   GitFolder,
@@ -317,8 +321,6 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
 
     if (!this.hpcConfig)
       throw new Error(`cannot find hpcConfig with name ${hpcName}`);
-    if (!this.hpcConfig.globus)
-      throw new Error(`cannot find hpcConfig.globus with name ${hpcName}`);
 
     this.from = from;
     this.to = {
@@ -337,17 +339,17 @@ class GlobusFolderUploader extends CachedFolderUploader {  // eslint-disable-lin
    * @param {GlobusFolder} folder
    */
   protected async uploadToFolder(folder: GlobusFolder) {
-    this.taskId = await GlobusUtil.initTransfer(
+    const taskId = await GlobusClient.initTransfer(
       this.from,
       folder,
-      this.hpcConfig,
       "job-id-" + this.jobId + "-upload-folder-" + this.id
     );
 
+    this.taskId = taskId;
+
     // get status of transfer
-    const status = await GlobusUtil.monitorTransfer(
+    const status = await GlobusClient.monitorTransfer(
       this.taskId,
-      this.hpcConfig
     );
 
     if (status.includes("FAILED")) {
