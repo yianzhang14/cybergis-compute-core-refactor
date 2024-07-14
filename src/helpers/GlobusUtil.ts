@@ -76,7 +76,7 @@ export default class GlobusUtil {
     taskId: string,
     hpcConfig: hpcConfig
   ): Promise<string> {
-    return await this._queryStatus(taskId, hpcConfig, "globus_monitor.py");
+    return this._queryStatus(taskId, hpcConfig, "globus_monitor.py");
   }
 
   /**
@@ -91,7 +91,7 @@ export default class GlobusUtil {
     taskId: string,
     hpcConfig: hpcConfig
   ): Promise<string> {
-    return await this._queryStatus(taskId, hpcConfig, "globus_query_status.py");
+    return this._queryStatus(taskId, hpcConfig, "globus_query_status.py");
   }
 
   /**

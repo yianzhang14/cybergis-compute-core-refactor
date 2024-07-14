@@ -5,8 +5,13 @@ import {
 
 import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
+import { Folder } from "../models/Folder";
+import { Git } from "../models/Git";
+import { GlobusTransferRefreshToken } from "../models/GlobusTransferRefreshToken";
+import { Job } from "../models/Job";
+import { Log } from "../models/Log";
 
-const entities = ["../models/**/*.js", "../models/**/*.ts"];
+const entities = [Cache, Event, Folder, Git, GlobusTransferRefreshToken, Job, Log];
 
 let dbConfig: DataSourceOptions = {
   name: "default",

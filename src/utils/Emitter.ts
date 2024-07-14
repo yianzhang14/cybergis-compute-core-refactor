@@ -79,7 +79,7 @@ class Emitter {
    * @returns {Promise{Event[]}} list of events
     */
   async getEvents(jobId: string): Promise<Event[]> {
-    return await dataSource
+    return dataSource
       .createQueryBuilder(Event, "event")
       .where("event.jobId = :jobId", { jobId: jobId })
       .orderBy("event.createdAt", "DESC")
@@ -93,7 +93,7 @@ class Emitter {
    * @return {Promise<Log[]>} list of logs
    */
   async getLogs(jobId: string): Promise<Log[]> {
-    return await dataSource
+    return dataSource
       .createQueryBuilder(Log, "log")
       .where("log.jobId = :jobId", { jobId: jobId })
       .orderBy("log.createdAt", "DESC")

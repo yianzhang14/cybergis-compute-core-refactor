@@ -2,7 +2,6 @@ import { Request, NextFunction, Response } from "express";
 import jsonschema = require("jsonschema");
 
 import { Folder } from "../models/Folder";
-import { Git } from "../models/Git";
 import dataSource from "../utils/DB";
 import JupyterHub from "../utils/JupyterHub";
 import { ResultFolderContentManager, GlobusTaskListManager } from "../utils/Redis";
@@ -135,32 +134,6 @@ export async function prepareDataForDB(
 
   return out;
 }
-
-// initializes a hello world repository in the DB
-async function initHelloWorldGit() {
-  await dataSource.initialize();
-  
-  const helloWorldGit = await dataSource
-    .getRepository(Git)
-    .findOneBy({
-      id: "hello_world"
-    });
-
-  if (helloWorldGit === null) {
-    const git = {
-      id: "hello_world",
-      address: "https://github.com/cybergis/cybergis-compute-hello-world.git",
-      isApproved: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await dataSource.getRepository(Git).save(git);
-  }
-}
-
-// call initialization stuff
-void initHelloWorldGit();
 
 export const authMiddleWare = async (
   req: Request, 
