@@ -53,6 +53,27 @@ export class GlobusTransferUtil {
     this.accessToken = response.data.access_token;
   }
 
+  private async getSubmissionId(): Promise<string> {
+    await this.init();
+
+    try {
+      const response: AxiosResponse<{ value: string }> = await axios.get(`${baseUrl}/submission_id`, {
+        headers: {
+          "Authorization": `Bearer ${this.accessToken}`
+        }
+      });
+
+      if (response.status === 200) {
+        return response.data.value;
+      }
+
+    } catch (err) {
+      console.error("error getting submission id for transfer submission: ", err);
+    }
+
+    throw new Error("Something went wrong getting the submission id");
+  }
+
   /**
    * Initializes globus job
    *
@@ -74,7 +95,7 @@ export class GlobusTransferUtil {
 
     const data = {
       DATA_TYPE: "transfer",
-      submission_id: "",
+      submission_id: await this.getSubmissionId(),
       label: (label !== "" ? `${label}_${Math.floor(Math.random() * 1000)}` : undefined),
       source_endpoint: from.endpoint,
       destination_endpoint: to.endpoint,
@@ -87,7 +108,6 @@ export class GlobusTransferUtil {
     };
 
     try {
-      console.log(this.accessToken);
       const response: AxiosResponse<{ task_id: string }> = await axios.post(`${baseUrl}/transfer`, data, {
         headers: {
           "Content-Type": "application/json",
