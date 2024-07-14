@@ -15,12 +15,6 @@
         "esModuleInterop": true,
          "moduleResolution": "node",
          "sourceMap": true,
-         "baseUrl": ".",
-         "paths": {
-            "../../configs/*": [
-                "configs/*"
-            ]
-        }
       },
     "include": [
         "**/*",

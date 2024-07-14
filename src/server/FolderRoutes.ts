@@ -1,11 +1,12 @@
 import express = require("express");
-import { GlobusClient } from "src/helpers/GlobusTransferUtil";
+
 
 import * as path from "path";
 
 import {
   hpcConfigMap,
 } from "../../configs/config";
+import { GlobusClient } from "../helpers/GlobusTransferUtil";
 import * as Helper from "../helpers/Helper";
 import { Folder } from "../models/Folder";
 import dataSource from "../utils/DB";

@@ -1,9 +1,12 @@
 import axios, { AxiosResponse } from "axios";
-import { GlobusTransferRefreshToken } from "src/models/GlobusTransferRefreshToken";
-import dataSource from "src/utils/DB";
-import { GlobusFolder } from "src/utils/types";
+
+
 
 import { config } from "../../configs/config";
+import { GlobusTransferRefreshToken } from "../models/GlobusTransferRefreshToken";
+import dataSource from "../utils/DB";
+import { GlobusFolder } from "../utils/types";
+
 
 const baseUrl = "https://transfer.api.globus.org/v0.10";
 

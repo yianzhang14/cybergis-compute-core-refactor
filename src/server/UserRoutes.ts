@@ -1,11 +1,12 @@
 import express = require("express");
-import { GlobusClient } from "src/helpers/GlobusTransferUtil";
+
 
 import * as path from "path";
 
 import {
   jupyterGlobusMap
 } from "../../configs/config";
+import { GlobusClient } from "../helpers/GlobusTransferUtil";
 import * as Helper from "../helpers/Helper";
 import JobUtil from "../helpers/JobUtil";
 import { Job } from "../models/Job";

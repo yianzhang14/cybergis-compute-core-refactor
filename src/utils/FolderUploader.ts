@@ -1,5 +1,4 @@
 
-import { GlobusClient } from "src/helpers/GlobusTransferUtil";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -10,6 +9,7 @@ import SingularityConnector from "../connectors/SingularityConnector";
 import SlurmConnector from "../connectors/SlurmConnector";
 import FolderUtil from "../helpers/FolderUtil";
 import GitUtil from "../helpers/GitUtil";
+import { GlobusClient } from "../helpers/GlobusTransferUtil";
 import * as Helper from "../helpers/Helper";
 import { Cache } from "../models/Cache";
 import { Folder } from "../models/Folder";
