@@ -1,18 +1,22 @@
 import express = require("express");
+
+
 import * as path from "path";
+
 import {
   hpcConfigMap,
-} from "./configs/config";
-import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./ServerUtil";
-import dataSource from "./src/DB";
-import GlobusUtil from "./src/lib/GlobusUtil";
-import * as Helper from "./src/lib/Helper";
-import { Folder } from "./src/models/Folder";
+} from "../../configs/config";
+import { GlobusClient } from "../helpers/GlobusTransferUtil";
+import * as Helper from "../helpers/Helper";
+import { Folder } from "../models/Folder";
+import dataSource from "../utils/DB";
 import type {
   updateFolderBody,
   initGlobusDownloadBody,
   GlobusFolder
-} from "./src/types";
+} from "../utils/types";
+
+import { authMiddleWare, requestErrors, validator, schemas, prepareDataForDB, globusTaskList } from "./ServerUtil";
 
 const folderRouter = express.Router();
 
@@ -247,8 +251,6 @@ folderRouter.post(
       return;
     }
     
-    Helper.nullGuard(hpcConfig.globus);
-    
     // init transfer
     const fromPath: string = (body.fromPath !== undefined
       ? path.join(folder.globusPath, body.fromPath)
@@ -258,16 +260,13 @@ folderRouter.post(
     // console.log(from, to);
     
     try {
-      Helper.nullGuard(hpcConfig.globus);
-        
       // start the transfer
-      const globusTaskId = await GlobusUtil.initTransfer(
+      const globusTaskId = await GlobusClient.initTransfer(
         from,
         to,
-        hpcConfig,
         `job-id-${jobId}-download-folder-${folder.id}`
       );
-    
+
       // record the task as ongoing for the given folder
       await globusTaskList.put(folderId, globusTaskId);
       res.json({ globus_task_id: globusTaskId });
@@ -325,9 +324,8 @@ folderRouter.get(
         throw new Error("No task id found.");
       }
   
-      const status = await GlobusUtil.queryTransferStatus(
+      const status = await GlobusClient.queryTransferStatus(
         globusTaskId,
-        hpcConfigMap[folder.hpc]
       );
   
       // remove the folder from the ongoing globus task list if the globus transfer finished

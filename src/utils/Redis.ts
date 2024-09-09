@@ -1,7 +1,9 @@
 import { RedisClientType, createClient } from "redis";
-import { config } from "../configs/config";
+
+import { config } from "../../configs/config";
+import { Job } from "../models/Job";
+
 import dataSource from "./DB";
-import { Job } from "./models/Job";
 import { credential } from "./types";
 
 class RedisStore {
@@ -55,7 +57,7 @@ export class GlobusTaskListManager extends RedisStore {
    * @return {Promise<string>} out - redis output
    */
   public async get(label: string): Promise<string | null> {
-    return await this.client.GET(`globus_task_${label}`);
+    return this.client.GET(`globus_task_${label}`);
   }
 
   /**
@@ -190,7 +192,7 @@ export class JobQueue extends RedisStore {
    * @returns {number} length
    */
   async length(): Promise<number> {
-    return await this.client.LLEN(this.name);
+    return this.client.LLEN(this.name);
   }
 
   /**

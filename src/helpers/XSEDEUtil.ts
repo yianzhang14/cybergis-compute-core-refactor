@@ -1,7 +1,8 @@
 import axios from "axios";
+
 import { config } from "../../configs/config";
 import { Job } from "../models/Job";
-import { hpcConfig } from "../types";
+import { hpcConfig } from "../utils/types";
 
 /**
  * Class for accessing XSEDE commands. May be deprecated (https://www.xsede.org/)?

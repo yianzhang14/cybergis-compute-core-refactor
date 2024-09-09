@@ -1,7 +1,7 @@
 import "jest";
 import { config } from "../../configs/config";
-import { clearAll } from "../../src/DB";
-import Emitter from "../../src/Emitter";
+import { clearAll } from "../../src/utils/DB";
+import Emitter from "../../src/utils/Emitter";
 import TestHelper from "../TestHelper";
 
 beforeAll(() => {

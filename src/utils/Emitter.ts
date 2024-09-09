@@ -1,8 +1,9 @@
-import { config } from "../configs/config";
+import { config } from "../../configs/config";
+import { Event } from "../models/Event";
+import { Job } from "../models/Job";
+import { Log } from "../models/Log";
+
 import dataSource from "./DB";
-import { Event } from "./models/Event";
-import { Job } from "./models/Job";
-import { Log } from "./models/Log";
 
 /**
  * This class abstracts away the "emission" of events/signals relating to job statuses via mutations to the database. 
@@ -78,7 +79,7 @@ class Emitter {
    * @returns {Promise{Event[]}} list of events
     */
   async getEvents(jobId: string): Promise<Event[]> {
-    return await dataSource
+    return dataSource
       .createQueryBuilder(Event, "event")
       .where("event.jobId = :jobId", { jobId: jobId })
       .orderBy("event.createdAt", "DESC")
@@ -92,7 +93,7 @@ class Emitter {
    * @return {Promise<Log[]>} list of logs
    */
   async getLogs(jobId: string): Promise<Log[]> {
-    return await dataSource
+    return dataSource
       .createQueryBuilder(Log, "log")
       .where("log.jobId = :jobId", { jobId: jobId })
       .orderBy("log.createdAt", "DESC")

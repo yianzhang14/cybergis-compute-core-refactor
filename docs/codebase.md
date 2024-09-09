@@ -49,7 +49,7 @@ Dependencies:
 - `src/DB.ts`: provides a reference to mutate the underlying database *(not used)*
 - `src/errors.ts`: used for a custom `ConnectorError` on a failed SSH connection
 - `src/Helper.ts`: general helper functions (mainly type guards)
-- `src/lib/FileUtil.ts`: used for some helpful zipping/local file functions for the host server *(possibly wrong import, FileUtil does not exist)*
+- `src/shared/FileUtil.ts`: used for some helpful zipping/local file functions for the host server *(possibly wrong import, FileUtil does not exist)*
 - `src/BaseMaintainer.ts`: used to allow the relevant logs to propagate to the maintainer of the connector's job
 - `src/types.ts`: various custom types
 - `src/connectors/connectionPool.ts`: used to get the SSH configs to open SSH connections
@@ -74,7 +74,7 @@ Improvements
 
 ### Utility classes
 
-These classes are found in the `src/lib/` directory, and these generally serve as a static helper functions abstracting away more basic operations for other parts of the codebase. The functionalities for each one are described below:
+These classes are found in the `src/shared/` directory, and these generally serve as a static helper functions abstracting away more basic operations for other parts of the codebase. The functionalities for each one are described below:
 
 - `FolderUtil`: This class generally deals with files on the local server, providing functions that can zip and unzip folders/files along with functions that can detect if a file is zipped and delete folders/files. 
 
@@ -88,7 +88,7 @@ These classes are found in the `src/lib/` directory, and these generally serve a
 
         - `src/FolderUploader.ts`: to handle zipping/unzipping on local file uploads
         - `src/BaseConnector.ts`: for unzipping upon downloading something
-        - `src/lib/GitUtil.ts`: unzipping files
+        - `src/shared/GitUtil.ts`: unzipping files
 
 - `GitUtil`: This class handles interactions with [github](https://github.com) repositories on the hosting server. It supports things like cloning/refreshing/pulling repositores from the GitHub remote link, and, more importantly, it supports the retrieval and processing of executable manifests stored in job GitHub repositores that describe how a job should be run. 
     - Update: new functions that just `wget` the manifests instead of fully repulling have been added as of commit `e2a4f0`. 
@@ -110,7 +110,7 @@ These classes are found in the `src/lib/` directory, and these generally serve a
         - `configs/config.ts`: needed to get redis credentials and globus ids
         - `src/DB.ts`: used to interface with the `globus_transfer_refresh_token` database to get the refresh token associated with an hpc's globus identity
         - `src/types.ts`: import custom functions needed for redis & configs/folders
-        - `src/lib/Helper.ts`: for null guard type assertions
+        - `src/shared/Helper.ts`: for null guard type assertions
         - `src/PythonUtil.ts`: used to actually execute the python scripts that directly interface with globus via the Python SDK
     - Dependents:
         - `server.ts`: needed for a route that gives information regarding globus and to support downloading folders from the server
@@ -134,7 +134,7 @@ These classes are found in the `src/lib/` directory, and these generally serve a
         - `child_process`: used to run the python programs externally via forking
         - `configs/config.ts`: used for a testing flag controlling print statements
     - Dependents:
-        - `src/lib/GlobusUtil.ts`: uses these functions to interface with globus via python scripts
+        - `src/shared/GlobusUtil.ts`: uses these functions to interface with globus via python scripts
         - `tools/globus-refresh-transfer-token.ts`: also uses these functions to interface with globus via python scripts
 - `XSEDEUtil`: This class provides functionality for accessing [XSEDE](https://www.xsede.org/) commands--in particular, it is able to log jobs to XSEDE, given that the HPC in question has the credentials to do so in the config. 
     - Dependencies: 
@@ -170,13 +170,13 @@ Dependencies:
 - `configs/config.ts`: used to access testing flags, hpc configs, and maintainer configs
 - `src/connectors/`: allows maintainers to actually communicate with HPCs
 - `src/DB.ts` & `src/models/*`: used to interface with `Job` repo for updates
-- `src/lib/Helper.ts`: general utility (null guarding)
+- `src/shared/Helper.ts`: general utility (null guarding)
 - `src/Supervisor.ts`: unused (supposed to be parent pointer)
 - `src/types.ts`: various custom types for configs/events/slurm
 - `src/FolderUploader.ts`: used to upload things to the HPC (in `CommunityContributionMaintainer`)
 - `src/GitUtil.ts`: used to get executable manifests for a given job (associated with a git repo; in `CommunityContributionMaintainer`)
-- `src/lib/JobUtil.ts`: used to have a result folder content manager (unclear whether this is separate or the same as the one in `server.ts`)
-- `src/lib/XSEDEUtil`: for job logging to XSEDE
+- `src/shared/JobUtil.ts`: used to have a result folder content manager (unclear whether this is separate or the same as the one in `server.ts`)
+- `src/shared/XSEDEUtil`: for job logging to XSEDE
 
 Dependents:
 
@@ -352,7 +352,7 @@ Dependencies:
 - `redis`: to implement the key-value store to keep track of credentials
 - `util`: for `redis` function storing with `promisify`
 - `configs/config.ts`: to get redis credentails
-- `src/lib/Helper.ts`: generating random ids for credentials (given the time)
+- `src/shared/Helper.ts`: generating random ids for credentials (given the time)
 - `src/types.ts`: miscellaneous assorted custom types used for typing
 
 Dependents:
@@ -388,7 +388,7 @@ Dependencies:
 - `src/connectors/ConnectionPool.ts`: used for keeping track of the number of jobs on each HPC & for ad-hoc additions of SSH connections for jobs with private credentials
 - `src/DB.ts` & `src/models/`: used to connect with the database to log errors with job initialization (and set the respective finishedAt time) and to register job events/logs upon job completion
 - `src/Emitter.ts`: used to register events/logs generated during the job maintain cycle
-- `src/lib/Helper.ts`: null/assertion checking
+- `src/shared/Helper.ts`: null/assertion checking
 - `src/maintainers/BaseMaintainer`: used to allow supervisors to create maintainers for queued jobs
 - `src/Queue.ts`: used to implement the job queue of a supervisor
 - `src/types.ts`: miscellaneous custom typings used

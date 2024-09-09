@@ -1,14 +1,14 @@
 import { config, hpcConfigMap } from "../configs/config";
-import dataSource from "../src/DB";
-import PythonUtil from "../src/lib/PythonUtil";
+import PythonUtil from "../src/helpers/PythonUtil";
 import { GlobusTransferRefreshToken } from "../src/models/GlobusTransferRefreshToken";
+import dataSource from "../src/utils/DB";
 
 const main = async () => {
   const identities: string[] = [];
   for (const i in hpcConfigMap) {
     if (hpcConfigMap[i].globus) {
-      if (!(hpcConfigMap[i].globus!.identity in identities)) {
-        identities.push(hpcConfigMap[i].globus!.identity);
+      if (!(hpcConfigMap[i].globus.identity in identities)) {
+        identities.push(hpcConfigMap[i].globus.identity);
       }
     }
   }

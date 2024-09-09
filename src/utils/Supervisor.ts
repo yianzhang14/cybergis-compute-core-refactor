@@ -1,12 +1,15 @@
 import NodeSSH = require("node-ssh");
+
 import * as events from "events";
-import { config, maintainerConfigMap, hpcConfigMap } from "../configs/config";
-import connectionPool from "./connectors/ConnectionPool";
+
+import { config, maintainerConfigMap, hpcConfigMap } from "../../configs/config";
+import connectionPool from "../connectors/ConnectionPool";
+import * as Helper from "../helpers/Helper";
+import BaseMaintainer from "../maintainers/BaseMaintainer";
+import { Job } from "../models/Job";
+
 import dataSource from "./DB";
 import Emitter from "./Emitter";
-import * as Helper from "./lib/Helper";
-import BaseMaintainer from "./maintainers/BaseMaintainer";
-import { Job } from "./models/Job";
 import { JobQueue } from "./Redis";
 import { SSH, callableFunction } from "./types";
 
@@ -71,7 +74,7 @@ class Supervisor {
           if (!job) continue;
 
           // eslint-disable-next-line
-          const maintainer: new(job: Job) => BaseMaintainer = require(`./maintainers/${
+          const maintainer: new(job: Job) => BaseMaintainer = require(`../maintainers/${
             maintainerConfigMap[job.maintainer].maintainer
           }`).default;  // eslint-disable-line
             // ^ typescript compilation hack 

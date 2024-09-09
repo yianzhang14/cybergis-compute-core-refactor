@@ -7,6 +7,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
 } from "typeorm";
+
 import { Job } from "./Job";
 
 /** Class representing a job log. */

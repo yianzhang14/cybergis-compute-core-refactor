@@ -1,6 +1,8 @@
 import NodeSSH = require("node-ssh");
-import { hpcConfigMap } from "../configs/config";
-import * as Helper from "./lib/Helper";
+
+import { hpcConfigMap } from "../../configs/config";
+import * as Helper from "../helpers/Helper";
+
 import { CredentialManager } from "./Redis";
 
 class SSHCredentialGuard {

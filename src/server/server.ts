@@ -1,30 +1,53 @@
-
 import express = require("express");
-// import { Console } from "console";
-const swaggerDocument: Record<string, unknown> = require("../production/swagger.json");  // eslint-disable-line
-// import bodyParser = require("body-parser");
 import fileUpload = require("express-fileupload");
 import morgan = require("morgan");
 import swaggerUI = require("swagger-ui-express");
+
 import {
   config,
-} from "./configs/config";
+} from "../../configs/config";
+import { Git } from "../models/Git";
+import dataSource from "../utils/DB";
+
 import folderRouter from "./FolderRoutes";
 import gitRouter from "./GitRoutes";
 import infoRouter from "./InfoRoutes";
 import jobRouter from "./JobRoutes";
-import dataSource from "./src/DB";
 import userRouter from "./UserRoutes";
+
+const swaggerDocument: Record<string, unknown> = require("../../swagger.json");  // eslint-disable-line
 
 // create the express app
 const app = express();
 
+// initializes a hello world repository in the DB
+async function initHelloWorldGit() {
+  const helloWorldGit = await dataSource
+    .getRepository(Git)
+    .findOneBy({
+      id: "hello_world"
+    });
+
+  if (helloWorldGit === null) {
+    const git = {
+      id: "hello_world",
+      address: "https://github.com/cybergis/cybergis-compute-hello-world.git",
+      isApproved: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await dataSource.getRepository(Git).save(git);
+  }
+}
 
 // establish database connection
 dataSource
   .initialize()
   .then(() => {
     console.log("Data Source has been initialized!");
+
+    initHelloWorldGit().catch(() => {false;});
   })
   .catch((err) => {
     console.error("Error during Data Source initialization:", err);
@@ -55,7 +78,7 @@ app.use(
 );
 
 // create documentation routes
-app.use("/ts-docs", express.static("production/tsdoc"));
+app.use("/ts-docs", express.static("../../tsdoc"));
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 /**

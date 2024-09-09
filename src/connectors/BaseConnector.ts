@@ -1,11 +1,14 @@
+
 import { existsSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
+
 import { config, hpcConfigMap } from "../../configs/config";
-import { ConnectorError } from "../errors";
-import FileUtil from "../lib/FolderUtil";  // shouldn't this be registerUtil?
-import * as Helper from "../lib/Helper";
+import FileUtil from "../helpers/FolderUtil";  // shouldn't this be registerUtil?
+import * as Helper from "../helpers/Helper";
 import BaseMaintainer from "../maintainers/BaseMaintainer";
-import { options, hpcConfig, SSH, callableFunction } from "../types";
+import { ConnectorError } from "../utils/errors";
+import { options, hpcConfig, SSH, callableFunction } from "../utils/types";
+
 import connectionPool from "./ConnectionPool";
 
 /**
