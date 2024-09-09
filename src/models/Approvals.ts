@@ -14,6 +14,9 @@ export class Approvals {
   @Column({ type: "string" })
     user!: string;
 
+  @Column({ type: "string" })
+    hpc!: string;
+
   @Column({ type: "date" })
     createdAt!: Date;
 

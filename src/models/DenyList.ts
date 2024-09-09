@@ -16,6 +16,9 @@ export class DenyList {
   @PrimaryColumn()
     user!: string;
 
+  @PrimaryColumn()
+    hpc!: string;
+
   @Column({ type: "date" })
     createdAt!: Date;
 

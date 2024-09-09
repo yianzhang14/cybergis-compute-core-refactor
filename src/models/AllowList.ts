@@ -15,8 +15,11 @@ export class AllowList {
   @PrimaryColumn()
     user!: string;
 
-    @Column({ type: "date" })
-      createdAt!: Date;
+  @PrimaryColumn()
+    hpc!: string;
+
+  @Column({ type: "date" })
+    createdAt!: Date;
 
   @Column({ type: "date" })
     updatedAt!: Date;
