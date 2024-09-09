@@ -1,5 +1,8 @@
 import { config, hpcConfigMap, jupyterGlobusMap } from "../../configs/config";
+import { AllowList } from "../models/AllowList";
+import { DenyList } from "../models/DenyList";
 import { Job } from "../models/Job";
+import dataSource from "../utils/DB";
 import { callableFunction } from "../utils/types";
 // import * as fs from "fs";
 
@@ -141,8 +144,30 @@ export function canAccessHPC(user: string, hpc: string): boolean {
     // if the allowList isn't blank, we need to check for them
     return allowList.includes(user);
   }
+}
 
-  // shouldn't be reachable, but print false just in case
+export async function canAccessHPC_DB(user: string, hpc: string): Promise<boolean> {
+  const denyListRepo = dataSource.getRepository(DenyList);
+  const denied = await denyListRepo.findOneBy({ hpc, user });
+
+  // check if user is in the denylist
+  if (denied !== null) {
+    return false;
+  }
+
+  const allowListRepo = dataSource.getRepository(AllowList);
+  const allowList = await allowListRepo.findBy({ hpc });
+
+  if (allowList.length === 0) {
+    return true;
+  } else {
+    for (const entry of allowList) {
+      if (entry.user === user) {
+        return true;
+      }
+    }
+  } 
+  
   return false;
 }
 
