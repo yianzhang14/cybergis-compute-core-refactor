@@ -120,6 +120,7 @@ export interface slurm {
   gpus_per_socket?: number | string;
   gpus_per_task?: number | string;
   partition?: string;
+  allocation?: string;
   mail_type?: string[];
   mail_user?: string[];
   modules?: string[];
@@ -210,6 +211,8 @@ export interface hpcConfig {
   xsede_job_log_credential: XSEDEJobLogCredential;
   allowlist: string[];
   denylist: string[];
+  allocation?: string;
+  partition?: string;
 }
 
 export interface XSEDEJobLogCredential {
