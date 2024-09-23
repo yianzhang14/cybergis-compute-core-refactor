@@ -39,7 +39,6 @@ let dbConfig: DataSourceOptions = {
       port: config.redis.port,
       // TODO: add password support
     },
-    ignoreErrors: true,
   },
 };
 
