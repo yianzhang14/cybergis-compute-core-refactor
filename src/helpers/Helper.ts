@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import getRandomValues from "get-random-values";
 
 import { config, hpcConfigMap, jupyterGlobusMap } from "../../configs/config";
 import { AllowList } from "../models/AllowList";
@@ -103,7 +103,7 @@ export function randomHash(length: number): string {
   const byteLength = Math.ceil((length * 3) / 4);
 
   const random = new Uint8Array(byteLength);
-  crypto.getRandomValues(random);
+  getRandomValues(random);
 
   const base64 = btoa(String.fromCharCode(...random));
 
