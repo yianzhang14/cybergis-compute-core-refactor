@@ -5,7 +5,10 @@ import {
 
 import { config } from "../../configs/config";
 import * as Helper from "../helpers/Helper"; 
+import { AllowList } from "../models/AllowList";
+import { Approvals } from "../models/Approvals";
 import { Cache } from "../models/Cache";
+import { DenyList } from "../models/DenyList";
 import { Event } from "../models/Event";
 import { Folder } from "../models/Folder";
 import { Git } from "../models/Git";
@@ -13,7 +16,9 @@ import { GlobusTransferRefreshToken } from "../models/GlobusTransferRefreshToken
 import { Job } from "../models/Job";
 import { Log } from "../models/Log";
 
-const entities = [Cache, Event, Folder, Git, GlobusTransferRefreshToken, Job, Log];
+const entities = [
+  Cache, Event, Folder, Git, GlobusTransferRefreshToken, Job, Log, AllowList, DenyList, Approvals
+];
 
 let dbConfig: DataSourceOptions = {
   name: "default",
@@ -27,15 +32,15 @@ let dbConfig: DataSourceOptions = {
   logging: false,
   migrationsRun: true,
   entities: entities,
-  // cache: {
-  //   type: "redis",
-  //   options: {
-  //     host: config.redis.host,
-  //     port: config.redis.port,
-  //     // TODO: add password support
-  //   },
-  //   ignoreErrors: true,
-  // },
+  cache: {
+    type: "redis",
+    options: {
+      host: config.redis.host,
+      port: config.redis.port,
+      // TODO: add password support
+    },
+    ignoreErrors: true,
+  },
 };
 
 if (config.is_jest) {
