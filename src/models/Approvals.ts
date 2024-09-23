@@ -23,11 +23,11 @@ export class Approvals {
   @Column()
     hash!: string;
 
-  @Column({ type: "date", default: () => "CURRENT_TIMESTAMP" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;
 
   @Column({ 
-    type: "date",
+    type: "datetime",
     nullable: true
   })
     approvedAt?: Date;
