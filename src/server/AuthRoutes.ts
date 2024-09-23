@@ -38,7 +38,7 @@ authRouter.post("/request/addUser", async function (req, res) {
     type: ApprovalType.APPROVAL,
   });
 
-  if (existing?.approvedAt !== undefined) {
+  if (existing?.approvedAt != null) {
     res.status(400).json({ error: "approval request already pending" });
     return;
   }
@@ -80,7 +80,7 @@ authRouter.post("/request/denyUser", async function (req, res) {
     type: ApprovalType.DENIAL,
   });
 
-  if (existing?.approvedAt !== undefined) {
+  if (existing?.approvedAt != null) {
     res.status(400).json({ error: "denial request already pending" });
     return;
   }
@@ -113,7 +113,9 @@ authRouter.get("/approve", async (req, res) => {
     hash
   });
 
-  if (existing === null || existing.approvedAt !== undefined) {
+  console.log;
+
+  if (existing === null || existing.approvedAt != null) {
     res.status(400).json({ error: "non-existent or invalid approval id parameter" });
     return;
   }
@@ -131,7 +133,7 @@ authRouter.get("/approve", async (req, res) => {
       hpc: existing.hpc,
     });
 
-    if (denial?.deletedAt !== undefined) {
+    if (denial?.deletedAt != null) {
       denial.delete();
       await denyRepo.save(denial);
     }
@@ -146,7 +148,7 @@ authRouter.get("/approve", async (req, res) => {
       hpc: existing.hpc,
     });
 
-    if (allow?.deletedAt !== undefined) {
+    if (allow?.deletedAt != null) {
       allow.delete();
       await allowRepo.save(allow);
     }
