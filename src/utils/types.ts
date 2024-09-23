@@ -348,6 +348,11 @@ export interface authReqBody {
   jupyterhubApiToken: string
 }
 
+export interface modifyUserBody {
+  user: string,
+  hpc: string
+}
+
 export interface updateFolderBody { 
   jupyterhubApiToken: string, 
   name?: string, 
@@ -382,3 +387,8 @@ export interface updateJobBody {
 }
 
 export type callableFunction = (..._args: unknown[]) => unknown;
+
+export enum ApprovalType {
+  APPROVAL = "approval",
+  DENIAL = "deny"
+}

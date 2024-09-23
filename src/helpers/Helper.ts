@@ -91,6 +91,24 @@ export function randomStr(length: number): string {
 }
 
 /**
+ * Generate a random base 64 string with a given length.
+ *
+ * @export
+ * @param {number} length length of desired string
+ * @return {string} base 64 string
+ */
+export function randomHash(length: number): string {
+  const byteLength = Math.ceil((length * 3) / 4);
+
+  const random = new Uint8Array(byteLength);
+  crypto.getRandomValues(random);
+
+  const base64 = btoa(String.fromCharCode(...random));
+
+  return base64.slice(0, length);
+}
+
+/**
  * Checks if an object is empty. Not used.
  *
  * @param {Object} obj object to check
@@ -148,7 +166,7 @@ export function canAccessHPC(user: string, hpc: string): boolean {
 
 export async function canAccessHPC_DB(user: string, hpc: string): Promise<boolean> {
   const denyListRepo = dataSource.getRepository(DenyList);
-  const denied = await denyListRepo.findOneBy({ hpc, user });
+  const denied = await denyListRepo.findOneBy({ hpc, user, deletedAt: undefined });
 
   // check if user is in the denylist
   if (denied !== null) {
@@ -162,7 +180,7 @@ export async function canAccessHPC_DB(user: string, hpc: string): Promise<boolea
     return true;
   } else {
     for (const entry of allowList) {
-      if (entry.user === user) {
+      if (entry.user === user && entry.deletedAt === undefined) {
         return true;
       }
     }

@@ -90,6 +90,13 @@ export const schemas = {
     properties: {
       hpc: { type: "string" },
     }
+  },
+  modifyUser: {
+    type: "object",
+    properties: {
+      user: { type: "string" },
+      hpc: { type: "string" }
+    }
   }
 };
 

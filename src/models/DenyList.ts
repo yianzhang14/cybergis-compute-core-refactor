@@ -6,7 +6,7 @@ import {
   PrimaryColumn,
 } from "typeorm";
   
-/** Class representing a cached entity. */
+/** Class representing a user denied from a particular HPC. */
 @Entity({ name: "denylist" })
 export class DenyList {
   
@@ -25,6 +25,9 @@ export class DenyList {
   @Column({ type: "date" })
     updatedAt!: Date;
 
+  @Column({ type: "date" })
+    deletedAt!: Date;
+
   /**
    * Set the createdAt time to the current time.
    *
@@ -38,6 +41,10 @@ export class DenyList {
 
   update() {
     this.createdAt = new Date();
+  }
+
+  delete() {
+    this.deletedAt = new Date();
   }
 }
   

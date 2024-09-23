@@ -6,7 +6,7 @@ import {
   PrimaryColumn,
 } from "typeorm";
     
-/** Class representing a cached entity. */
+/** Class representing an user approved to a particular HPC. */
 @Entity({ name: "allowlist" })
 export class AllowList {
   @PrimaryGeneratedColumn()
@@ -24,6 +24,9 @@ export class AllowList {
   @Column({ type: "date" })
     updatedAt!: Date;
 
+  @Column({ type: "date" })
+    deletedAt!: Date;
+
   /**
    * Set the createdAt time to the current time.
    *
@@ -37,6 +40,10 @@ export class AllowList {
 
   update() {
     this.createdAt = new Date();
+  }
+
+  delete() {
+    this.deletedAt = new Date();
   }
 }
     

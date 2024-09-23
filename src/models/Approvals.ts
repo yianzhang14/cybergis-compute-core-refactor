@@ -5,7 +5,7 @@ import {
   BeforeInsert,
 } from "typeorm";
     
-/** Class representing a cached entity. */
+/** Class representing a pending allow/deny approval. */
 @Entity({ name: "approvals" })
 export class Approvals {
   @PrimaryGeneratedColumn()
@@ -16,6 +16,12 @@ export class Approvals {
 
   @Column({ type: "string" })
     hpc!: string;
+
+  @Column({ type: "string" })
+    type!: string;
+
+  @Column({ type: "string" })
+    hash!: string;
 
   @Column({ type: "date" })
     createdAt!: Date;
@@ -28,12 +34,6 @@ export class Approvals {
     nullable: true
   })
     approvedAt?: Date;
-
-  @Column({
-    type: "string",
-    nullable: true
-  })
-    approvedBy?: string;
 
   /**
    * Set the createdAt time to the current time.
