@@ -99,9 +99,7 @@ export function randomStr(length: number): string {
  * @return {string} base 64 string
  */
 export function randomHash(length: number): string {
-  const byteLength = Math.ceil((length * 3) / 4);
-
-  const random = new Uint8Array(byteLength);
+  const random = new Uint8Array(length);
   getRandomValues(random);
 
   const result = Array.from(random).map(x => CHARACTERS[x % CHARACTERS.length]).join("");
