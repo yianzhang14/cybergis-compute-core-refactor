@@ -137,6 +137,7 @@ authRouter.get("/approve", async (req, res) => {
 
     if (denial !== null) {
       denial.delete();
+      await denyRepo.save(denial);
     }
   } else {
     await denyRepo.insert({
@@ -152,8 +153,11 @@ authRouter.get("/approve", async (req, res) => {
 
     if (allow !== null) {
       allow.delete();
+      await allowRepo.save(allow);
     }
   }
+
+  await approvalRepo.save(existing);
 
   res.status(200).json({ 
     messages: ["approval successful"] 
