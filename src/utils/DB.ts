@@ -23,7 +23,7 @@ let dbConfig: DataSourceOptions = {
   username: config.mysql.username,
   password: config.mysql.password,
   database: config.mysql.database,
-  synchronize: true,
+  synchronize: false,
   logging: false,
   migrationsRun: true,
   entities: entities,
