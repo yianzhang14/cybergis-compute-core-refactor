@@ -11,16 +11,16 @@ export class Approvals {
   @PrimaryGeneratedColumn()
     id!: number;
 
-  @Column({ type: "string" })
+  @Column()
     user!: string;
 
-  @Column({ type: "string" })
+  @Column()
     hpc!: string;
 
-  @Column({ type: "string" })
+  @Column()
     type!: string;
 
-  @Column({ type: "string" })
+  @Column()
     hash!: string;
 
   @Column({ type: "date" })

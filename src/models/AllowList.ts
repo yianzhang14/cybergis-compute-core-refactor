@@ -18,13 +18,13 @@ export class AllowList {
   @PrimaryColumn()
     hpc!: string;
 
-  @Column({ type: "date" })
+  @Column()
     createdAt!: Date;
 
-  @Column({ type: "date" })
+  @Column()
     updatedAt!: Date;
 
-  @Column({ type: "date" })
+  @Column()
     deletedAt!: Date;
 
   /**
