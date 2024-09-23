@@ -50,6 +50,10 @@ authRouter.post("/request/addUser", async function (req, res) {
     type: ApprovalType.APPROVAL,
     hash: Helper.randomHash(100)
   });
+
+  res.status(200).json({ 
+    messages: ["allowlist approval successfully requested"] 
+  });
 });
 
 authRouter.post("/request/denyUser", async function (req, res) {
@@ -88,6 +92,10 @@ authRouter.post("/request/denyUser", async function (req, res) {
     hpc: body.hpc,
     type: ApprovalType.DENIAL,
     hash: Helper.randomHash(100)
+  });
+
+  res.status(200).json({ 
+    messages: ["denylist approval successfully requested"] 
   });
 });
 
@@ -146,6 +154,10 @@ authRouter.get("/approve", async (req, res) => {
       allow.delete();
     }
   }
+
+  res.status(200).json({ 
+    messages: ["approval successful"] 
+  });
 });
 
 export default authRouter;
