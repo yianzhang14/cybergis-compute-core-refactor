@@ -18,14 +18,11 @@ export class AllowList {
   @PrimaryColumn()
     hpc!: string;
 
-  @Column()
+  @Column({ type: "date", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;
 
-  @Column()
-    updatedAt!: Date;
-
-  @Column()
-    deletedAt!: Date;
+  @Column({ type: "date", nullable: true })
+    deletedAt?: Date;
 
   /**
    * Set the createdAt time to the current time.
@@ -34,11 +31,6 @@ export class AllowList {
    */
   @BeforeInsert()
   setCreatedUpdated() {
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-  }
-
-  update() {
     this.createdAt = new Date();
   }
 

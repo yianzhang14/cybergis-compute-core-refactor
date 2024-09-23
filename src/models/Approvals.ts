@@ -23,11 +23,8 @@ export class Approvals {
   @Column()
     hash!: string;
 
-  @Column({ type: "date" })
+  @Column({ type: "date", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;
-
-  @Column({ type: "date" })
-    updatedAt!: Date;
 
   @Column({ 
     type: "date",
@@ -43,7 +40,6 @@ export class Approvals {
   @BeforeInsert()
   setCreatedUpdated() {
     this.createdAt = new Date();
-    this.updatedAt = new Date();
   }
 
   approve() {

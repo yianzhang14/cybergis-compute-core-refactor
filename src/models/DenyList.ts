@@ -19,14 +19,11 @@ export class DenyList {
   @PrimaryColumn()
     hpc!: string;
 
-  @Column({ type: "date" })
+  @Column({ type: "date", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;
 
-  @Column({ type: "date" })
-    updatedAt!: Date;
-
-  @Column({ type: "date" })
-    deletedAt!: Date;
+  @Column({ type: "date", nullable: true })
+    deletedAt?: Date;
 
   /**
    * Set the createdAt time to the current time.
@@ -35,11 +32,6 @@ export class DenyList {
    */
   @BeforeInsert()
   setCreatedUpdated() {
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-  }
-
-  update() {
     this.createdAt = new Date();
   }
 
