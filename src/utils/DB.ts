@@ -28,18 +28,18 @@ let dbConfig: DataSourceOptions = {
   username: config.mysql.username,
   password: config.mysql.password,
   database: config.mysql.database,
-  synchronize: false,
+  synchronize: true,
   logging: false,
   migrationsRun: true,
   entities: entities,
-  cache: {
-    type: "redis",
-    options: {
-      host: config.redis.host,
-      port: config.redis.port,
-      // TODO: add password support
-    },
-  },
+  // cache: {
+  //   type: "redis",
+  //   options: {
+  //     host: config.redis.host,
+  //     port: config.redis.port,
+  //     // TODO: add password support
+  //   },
+  // },
 };
 
 if (config.is_jest) {
