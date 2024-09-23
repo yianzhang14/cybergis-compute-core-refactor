@@ -8,6 +8,8 @@ import dataSource from "../utils/DB";
 import { callableFunction } from "../utils/types";
 // import * as fs from "fs";
 
+const CHARACTERS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /**
  * Converts base64 string to binary form.
@@ -83,11 +85,8 @@ export function job2object(
   */
 export function randomStr(length: number): string {
   let result = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
   }
   return result;
 }
@@ -105,9 +104,9 @@ export function randomHash(length: number): string {
   const random = new Uint8Array(byteLength);
   getRandomValues(random);
 
-  const base64 = btoa(String.fromCharCode(...random));
+  const result = Array.from(random).map(x => CHARACTERS[x % CHARACTERS.length]).join("");
 
-  return base64.slice(0, length);
+  return result.slice(0, length);
 }
 
 /**
