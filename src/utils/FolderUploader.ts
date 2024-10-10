@@ -285,9 +285,17 @@ abstract class CachedFolderUploader extends BaseFolderUploader {
   protected abstract getCanonicalUpdateTime(): Promise<number>;
 
   public async cachedUpload() {
+    const recordedUpdate = await this.getRecordedUpdateTime(); 
+    const canonicalUpdate = await this.getCanonicalUpdateTime();
+
+    if (recordedUpdate >= 0 && canonicalUpdate >= 0 
+      && (recordedUpdate / canonicalUpdate > 100 || canonicalUpdate / recordedUpdate > 100)) {
+      console.error("Comparing seconds and milliseconds for cache refresh check", recordedUpdate, canonicalUpdate);
+    }
+    
     // upload if it doesn't exist or the cache is stale
     if (!(await this.cacheExists()) 
-      || await this.getRecordedUpdateTime() < await this.getCanonicalUpdateTime()
+      || recordedUpdate < canonicalUpdate
     ) {
       await this.uploadToCache();
       await this.registerCache();
