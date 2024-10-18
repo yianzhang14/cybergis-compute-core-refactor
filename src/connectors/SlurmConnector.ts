@@ -1,6 +1,6 @@
 import * as path from "path";
 
-import { config } from "../../configs/config";
+import { config, hpcConfigMap } from "../../configs/config";
 import * as Helper from "../helpers/Helper";
 import { ConnectorError } from "../utils/errors";
 import { slurm } from "../utils/types";
@@ -35,6 +35,8 @@ class SlurmConnector extends BaseConnector {
    */
   prepare(cmd: string, config: slurm) {
     // prepare sbatch script
+    Helper.nullGuard(this.maintainer);
+    const hpc = hpcConfigMap[this.maintainer.job.hpc];
     config = Object.assign(
       {
         time: "01:00:00",
@@ -43,6 +45,14 @@ class SlurmConnector extends BaseConnector {
       },
       config
     );
+
+    if (config.allocation == null) {
+      config.allocation = hpc.allocation;
+    }
+
+    if (config.partition == null) {
+      config.partition = hpc.partition;
+    }
 
     let modules = "";
     if (config.modules) {
@@ -88,6 +98,7 @@ ${
 }
 ${config.gpus_per_task ? `#SBATCH --gpus-per-task=${config.gpus_per_task}` : ""}
 ${config.partition ? `#SBATCH --partition=${config.partition}` : ""}
+${config.allocation ? `#SBATCH -A ${config.allocation}` : ""}
 ${this.getSBatchTagsFromArray("mail-type", config.mail_type)}
 ${this.getSBatchTagsFromArray("mail-user", config.mail_user)}
 module purge

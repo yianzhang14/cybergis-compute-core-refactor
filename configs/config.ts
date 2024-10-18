@@ -34,6 +34,8 @@ for (const hpc in rawHpc) {
       globus: undefined,
       mount: {},
       slurm_input_rules: {},
+      allocation: undefined,
+      partition: undefined
     },
     JSON.parse(JSON.stringify((rawHpc as Record<string, unknown>)[hpc]))
   ) as hpcConfig;
