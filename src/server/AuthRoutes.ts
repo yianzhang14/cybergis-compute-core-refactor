@@ -161,4 +161,8 @@ authRouter.get("/approve", async (req, res) => {
   });
 });
 
+authRouter.get("cilogon/callback", (req, res) => {
+  res.status(200);
+});
+
 export default authRouter;
