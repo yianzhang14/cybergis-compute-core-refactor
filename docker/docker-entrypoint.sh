@@ -29,4 +29,5 @@ EOT
 
 # run server
 redis-server /job_supervisor/docker/redis.conf --daemonize yes
+sed -i '/::1/d' /etc/hosts
 npm run start
